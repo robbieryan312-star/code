@@ -16,18 +16,18 @@ export interface Source {
   url?: string;
   tier: SourceTier;
   date?: string;
-  description?: string; // what the source specifically documents
+  description?: string;
 }
 
 export interface Controversy {
   id: string;
   title: string;
-  summary: string; // factual description only — no editorial language
+  summary: string;
   category: 'Ethics' | 'Legal' | 'Financial' | 'Campaign' | 'Conduct' | 'Policy' | 'Conflict of Interest';
   status: 'Resolved' | 'Ongoing' | 'Dismissed' | 'Convicted' | 'Acquitted' | 'Under Investigation' | 'Alleged';
   date: string;
   sources: Source[];
-  isVerified: boolean; // true only if status is documented by official/nonpartisan source
+  isVerified: boolean;
 }
 
 export interface NewsItem {
@@ -37,9 +37,22 @@ export interface NewsItem {
   date: string;
   source: Source;
   category: string;
-  isOpinion: boolean;   // if true, excluded from main feed
-  isVerified: boolean;  // if false, shown with "UNVERIFIED" badge
+  isOpinion: boolean;
+  isVerified: boolean;
   url?: string;
+}
+
+// Chronological event tied to a specific stock trade
+export interface TradeTimelineEvent {
+  date: string;
+  type: 'vote' | 'statement' | 'committee_action' | 'hearing' | 'bill_signed' | 'market_event';
+  title: string;
+  description: string;
+  daysRelativeToTrade: number;  // negative = before trade, positive = after trade
+  priceAtEvent?: number;
+  priceChangePct?: number;       // % price change in the day(s) following this event
+  isFlagged: boolean;
+  source: Source;
 }
 
 export interface Politician {
@@ -140,20 +153,21 @@ export interface StockTrade {
   amount: number;
   amountMin: number;
   amountMax: number;
-  purchasePriceApprox?: number;  // estimated price at trade date (from historical data)
-  currentPrice?: number;          // current price for gain/loss calculation
+  purchasePriceApprox?: number;
+  currentPrice?: number;
   date: string;
   disclosureDate: string;
-  daysToDisclose: number;         // days between trade and disclosure (legal max: 45)
+  daysToDisclose: number;
   relatedVotes?: string[];
   relatedCommittees?: string[];
-  conflictScore: number;          // 0–100 computed from committee + vote overlap
+  conflictScore: number;
   sector: string;
   source: Source;
+  timelineEvents?: TradeTimelineEvent[];
 }
 
 export interface ConsistencyData {
-  overallScore: number; // 0–100
+  overallScore: number;
   campaignPromises: CampaignPromise[];
   partyLineVotePercentage: number;
   lobbyistAlignmentPercentage: number;
@@ -222,4 +236,31 @@ export interface USState {
   governor?: string;
   upcomingElections: number;
   activePoliticians: number;
+}
+
+// County-level elected officials
+export interface CountyOfficial {
+  id: string;
+  name: string;
+  position: string;
+  party: Party;
+  inOffice: boolean;
+  bio: string;
+  imageUrl?: string;
+  termEnd?: string;
+  nextElection?: string;
+  website?: string;
+  topIssues?: Issue[];
+  statements?: { quote: string; context: string; date: string; source: Source }[];
+}
+
+export interface CountyData {
+  fips: string;
+  name: string;
+  stateName: string;
+  stateCode: string;
+  seat?: string;
+  population?: number;
+  officials: CountyOfficial[];
+  website?: string;
 }
