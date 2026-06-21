@@ -82,6 +82,10 @@ export interface Politician {
   topIssues: Issue[];
   controversies: Controversy[];
   news: NewsItem[];
+  endorsements?: {
+    endorses: { name: string; office: string; politicianId?: string; date?: string; source?: Source }[];
+    endorsedBy: { name: string; office: string; politicianId?: string; date?: string; source?: Source }[];
+  };
 }
 
 export interface VoteRecord {

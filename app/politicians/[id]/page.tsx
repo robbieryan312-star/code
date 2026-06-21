@@ -13,23 +13,201 @@ import Link from 'next/link';
 import {
   ArrowLeft, X, Globe, Calendar, MapPin,
   TrendingUp, DollarSign, Vote, AlertTriangle, Briefcase, Newspaper, Scale,
+  ExternalLink, Users, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { use } from 'react';
 
 const tabs = [
-  { id: 'overview',     label: 'Overview',       icon: Briefcase },
-  { id: 'votes',        label: 'Voting Record',  icon: Vote },
-  { id: 'finance',      label: 'Money & Donors', icon: DollarSign },
-  { id: 'stocks',       label: 'Stock Trades',   icon: TrendingUp },
-  { id: 'consistency',  label: 'Promises',       icon: AlertTriangle },
-  { id: 'controversies',label: 'Controversies',  icon: Scale },
-  { id: 'news',         label: 'News',           icon: Newspaper },
+  { id: 'overview',      label: 'Overview',       icon: Briefcase },
+  { id: 'votes',         label: 'Voting Record',  icon: Vote },
+  { id: 'finance',       label: 'Money & Donors', icon: DollarSign },
+  { id: 'stocks',        label: 'Stock Trades',   icon: TrendingUp },
+  { id: 'consistency',   label: 'Promises',       icon: AlertTriangle },
+  { id: 'controversies', label: 'Controversies',  icon: Scale },
+  { id: 'news',          label: 'News',           icon: Newspaper },
+  { id: 'endorsements',  label: 'Endorsements',   icon: Users },
 ];
+
+import { Issue, Politician } from '@/lib/types';
 
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
   return `$${n}`;
+}
+
+function IssueAccordion({ issues }: { issues: Issue[] }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  return (
+    <div className="space-y-2">
+      {issues.map((issue, i) => (
+        <div key={issue.name} className={`border rounded-xl overflow-hidden transition-colors ${openIdx === i ? 'border-[#c8a951]/40' : 'border-[#1e3a5f]'}`}>
+          <button
+            onClick={() => setOpenIdx(openIdx === i ? null : i)}
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1e3a5f]/30 transition-colors text-left"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-white font-medium text-sm">{issue.name}</span>
+                <span className="text-xs bg-[#1e3a5f] text-gray-400 px-2 py-0 rounded-full">{issue.category}</span>
+              </div>
+              <div className="text-[#c8a951] text-xs mt-0.5">{issue.position}</div>
+            </div>
+            {openIdx === i
+              ? <ChevronDown className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
+              : <ChevronRight className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />}
+          </button>
+          {openIdx === i && (
+            <div className="px-4 pb-3 border-t border-[#1e3a5f] bg-[#06101e]/50 space-y-2">
+              <p className="text-gray-300 text-xs leading-relaxed pt-2">{issue.detail}</p>
+              {issue.source && (
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                    issue.source.tier === 'official'    ? 'bg-green-500/15 text-green-400' :
+                    issue.source.tier === 'nonpartisan' ? 'bg-blue-500/15 text-blue-400' :
+                    'bg-gray-500/15 text-gray-400'
+                  }`}>{issue.source.tier}</span>
+                  {issue.source.url ? (
+                    <a href={issue.source.url} target="_blank" rel="noopener noreferrer"
+                       className="flex items-center gap-1 text-xs text-[#c8a951] hover:text-white transition-colors">
+                      {issue.source.name} <ExternalLink className="h-3 w-3" />
+                    </a>
+                  ) : (
+                    <span className="text-xs text-gray-500">Source: {issue.source.name}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EndorsementsTab({ politician }: { politician: Politician }) {
+  const e = politician.endorsements;
+  if (!e || (e.endorses.length === 0 && e.endorsedBy.length === 0)) {
+    return (
+      <div className="bg-[#0d1f35] rounded-xl p-8 border border-[#1e3a5f] text-center">
+        <Users className="h-10 w-10 text-gray-600 mx-auto mb-3" />
+        <p className="text-gray-400 text-sm">No endorsement data on record for {politician.name}</p>
+        <p className="text-gray-600 text-xs mt-1">Endorsement records will be added as elections approach</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Endorsed By */}
+      <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+        <h2 className="text-white font-bold mb-1 flex items-center gap-2">
+          <Users className="h-4 w-4 text-[#c8a951]" /> Endorsed By
+        </h2>
+        <p className="text-gray-500 text-xs mb-4">Who has publicly supported {politician.firstName}</p>
+        {e.endorsedBy.length === 0 ? (
+          <p className="text-gray-500 text-sm">No endorsements recorded</p>
+        ) : (
+          <div className="space-y-3">
+            {e.endorsedBy.map((endorser, i) => (
+              <div key={i} className="border border-[#1e3a5f] rounded-xl p-3 bg-[#0a1628]">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[#c8a951] text-xs font-bold">{endorser.name.split(' ').map(n => n[0]).slice(0,2).join('')}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {endorser.politicianId ? (
+                      <Link href={`/politicians/${endorser.politicianId}`} className="text-white font-medium text-sm hover:text-[#c8a951] transition-colors">
+                        {endorser.name}
+                      </Link>
+                    ) : (
+                      <span className="text-white font-medium text-sm">{endorser.name}</span>
+                    )}
+                    <div className="text-gray-400 text-xs">{endorser.office}</div>
+                    {endorser.date && <div className="text-gray-600 text-xs">{endorser.date.split('-')[0]}</div>}
+                    {endorser.source && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-xs px-1.5 py-0 rounded font-medium ${
+                          endorser.source.tier === 'official' ? 'bg-green-500/15 text-green-400' :
+                          endorser.source.tier === 'nonpartisan' ? 'bg-blue-500/15 text-blue-400' :
+                          'bg-gray-500/15 text-gray-400'
+                        }`}>{endorser.source.tier}</span>
+                        {endorser.source.url ? (
+                          <a href={endorser.source.url} target="_blank" rel="noopener noreferrer"
+                             className="text-xs text-gray-500 hover:text-[#c8a951] transition-colors flex items-center gap-1">
+                            {endorser.source.name} <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-600">{endorser.source.name}</span>
+                        )}
+                        {endorser.source.description && (
+                          <span className="text-xs text-gray-600">— {endorser.source.description}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Endorses */}
+      <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+        <h2 className="text-white font-bold mb-1 flex items-center gap-2">
+          <Users className="h-4 w-4 text-blue-400" /> Who {politician.firstName} Endorses
+        </h2>
+        <p className="text-gray-500 text-xs mb-4">Candidates and officials {politician.firstName} has publicly backed</p>
+        {e.endorses.length === 0 ? (
+          <p className="text-gray-500 text-sm">No outgoing endorsements recorded</p>
+        ) : (
+          <div className="space-y-3">
+            {e.endorses.map((endorsed, i) => (
+              <div key={i} className="border border-[#1e3a5f] rounded-xl p-3 bg-[#0a1628]">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center flex-shrink-0">
+                    <span className="text-blue-400 text-xs font-bold">{endorsed.name.split(' ').map(n => n[0]).slice(0,2).join('')}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {endorsed.politicianId ? (
+                      <Link href={`/politicians/${endorsed.politicianId}`} className="text-white font-medium text-sm hover:text-[#c8a951] transition-colors">
+                        {endorsed.name}
+                      </Link>
+                    ) : (
+                      <span className="text-white font-medium text-sm">{endorsed.name}</span>
+                    )}
+                    <div className="text-gray-400 text-xs">{endorsed.office}</div>
+                    {endorsed.date && <div className="text-gray-600 text-xs">{endorsed.date.split('-')[0]}</div>}
+                    {endorsed.source && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-xs px-1.5 py-0 rounded font-medium ${
+                          endorsed.source.tier === 'official' ? 'bg-green-500/15 text-green-400' :
+                          endorsed.source.tier === 'nonpartisan' ? 'bg-blue-500/15 text-blue-400' :
+                          'bg-gray-500/15 text-gray-400'
+                        }`}>{endorsed.source.tier}</span>
+                        {endorsed.source.url ? (
+                          <a href={endorsed.source.url} target="_blank" rel="noopener noreferrer"
+                             className="text-xs text-gray-500 hover:text-[#c8a951] transition-colors flex items-center gap-1">
+                            {endorsed.source.name} <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-600">{endorsed.source.name}</span>
+                        )}
+                        {endorsed.source.description && (
+                          <span className="text-xs text-gray-600">— {endorsed.source.description}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function PoliticianProfile({ params }: { params: Promise<{ id: string }> }) {
@@ -169,19 +347,9 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Top Issues */}
             <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
-              <h2 className="text-white font-bold mb-4">Top Issues & Positions</h2>
-              <div className="space-y-4">
-                {politician.topIssues.map((issue) => (
-                  <div key={issue.name} className="border-b border-[#1e3a5f] last:border-0 pb-3 last:pb-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-white font-medium text-sm">{issue.name}</span>
-                      <span className="text-xs bg-[#1e3a5f] text-gray-300 px-2 py-0.5 rounded-full">{issue.category}</span>
-                    </div>
-                    <div className="text-[#c8a951] text-xs font-medium mb-0.5">{issue.position}</div>
-                    <div className="text-gray-400 text-xs">{issue.detail}</div>
-                  </div>
-                ))}
-              </div>
+              <h2 className="text-white font-bold mb-1">Key Positions</h2>
+              <p className="text-gray-500 text-xs mb-4">Click each issue to see detail and sources</p>
+              <IssueAccordion issues={politician.topIssues} />
             </div>
 
             {/* Quick Stats */}
@@ -286,6 +454,10 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
             <h2 className="text-white font-bold mb-4">News & Coverage</h2>
             <NewsSection news={politician.news} name={politician.name} />
           </div>
+        )}
+
+        {activeTab === 'endorsements' && (
+          <EndorsementsTab politician={politician} />
         )}
       </div>
     </div>
