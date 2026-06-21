@@ -13,7 +13,8 @@ import Link from 'next/link';
 import {
   ArrowLeft, X, Globe, Calendar, MapPin,
   TrendingUp, DollarSign, Vote, AlertTriangle, Briefcase, Newspaper, Scale,
-  ExternalLink, Users, ChevronDown, ChevronRight,
+  ExternalLink, Users, ChevronDown, ChevronRight, Baby, Crosshair, Plane,
+  Heart, Leaf, Landmark, BookOpen, Globe2, Shield, Clock,
 } from 'lucide-react';
 import { use } from 'react';
 
@@ -28,7 +29,120 @@ const tabs = [
   { id: 'endorsements',  label: 'Endorsements',   icon: Users },
 ];
 
-import { Issue, Politician } from '@/lib/types';
+import { Issue, Politician, VoteRecord } from '@/lib/types';
+
+// ── Hot Topics quick-view ────────────────────────────────────────────────────
+type HotTopicDef = { id: string; label: string; Icon: React.ElementType; keywords: string[] };
+const HOT_TOPICS: HotTopicDef[] = [
+  { id: 'abortion',    label: 'Abortion',          Icon: Baby,      keywords: ['abortion','reproductive','pro-life','pro-choice','6-week','15-week','roe'] },
+  { id: 'guns',        label: 'Gun Control',       Icon: Crosshair, keywords: ['gun','firearm','second amendment','2nd amendment','2a','nra','carry','weapon'] },
+  { id: 'immigration', label: 'Immigration',       Icon: Plane,     keywords: ['immigration','border','migrants','undocumented','sanctuary','e-verify'] },
+  { id: 'healthcare',  label: 'Healthcare',        Icon: Heart,     keywords: ['healthcare','health care','medicaid','medicare','aca','obamacare','insurance','hospital'] },
+  { id: 'climate',     label: 'Climate / Energy',  Icon: Leaf,      keywords: ['climate','environment','energy','green','carbon','fossil','everglades','drilling'] },
+  { id: 'economy',     label: 'Economy / Taxes',   Icon: Landmark,  keywords: ['economy','tax','fiscal','budget','debt','spending','esg','inflation'] },
+  { id: 'education',   label: 'Education',         Icon: BookOpen,  keywords: ['education','school','learning','student','teacher','curriculum','book','woke'] },
+  { id: 'foreign',     label: 'Foreign Policy',    Icon: Globe2,    keywords: ['foreign','ukraine','israel','nato','war','military','aid','china','taiwan'] },
+  { id: 'civil',       label: 'Civil Liberties',   Icon: Shield,    keywords: ['civil liberties','surveillance','privacy','fisa','patriot','4th amendment','speech','censorship'] },
+];
+
+function matchTopic(issues: Issue[], topic: HotTopicDef): Issue | null {
+  const kw = topic.keywords;
+  // Direct category match first
+  const byCategory = issues.find(i =>
+    kw.some(k => i.category.toLowerCase().includes(k) || i.name.toLowerCase().includes(k))
+  );
+  if (byCategory) return byCategory;
+  // Then scan position + detail text
+  return issues.find(i =>
+    kw.some(k =>
+      (i.position?.toLowerCase() || '').includes(k) ||
+      (i.detail?.toLowerCase() || '').includes(k)
+    )
+  ) || null;
+}
+
+function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[] }) {
+  const [openTopic, setOpenTopic] = useState<string | null>(null);
+
+  return (
+    <div className="bg-[#0d1f35] rounded-xl border border-[#1e3a5f] p-5 mb-6">
+      <h2 className="text-white font-bold mb-1">Where They Stand — Key Issues</h2>
+      <p className="text-gray-500 text-xs mb-4">Click any topic to see their position, actions taken, and source</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        {HOT_TOPICS.map(topic => {
+          const matched = matchTopic(issues, topic);
+          const Icon = topic.Icon;
+          const isOpen = openTopic === topic.id;
+
+          return (
+            <div key={topic.id} className="col-span-1">
+              <button
+                onClick={() => setOpenTopic(isOpen ? null : topic.id)}
+                className={`w-full text-left rounded-xl p-3 border transition-all ${
+                  matched
+                    ? isOpen
+                      ? 'border-[#c8a951] bg-[#c8a951]/10'
+                      : 'border-[#1e3a5f] hover:border-[#c8a951]/60 bg-[#0a1628] hover:bg-[#0a1628]'
+                    : 'border-[#1e3a5f]/40 bg-[#0a1628]/40 opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className={`h-4 w-4 flex-shrink-0 ${matched ? 'text-[#c8a951]' : 'text-gray-600'}`} />
+                  <span className={`text-xs font-semibold ${matched ? 'text-white' : 'text-gray-600'}`}>{topic.label}</span>
+                </div>
+                <div className="text-xs text-gray-400 leading-tight line-clamp-2">
+                  {matched ? matched.position : 'No record'}
+                </div>
+              </button>
+
+              {isOpen && matched && (
+                <div className="mt-1 rounded-xl border border-[#c8a951]/30 bg-[#06101e] p-3 text-xs space-y-2">
+                  <p className="text-gray-300 leading-relaxed">{matched.detail}</p>
+                  {matched.source && (
+                    <div className="flex items-center gap-2 pt-1 border-t border-[#1e3a5f]">
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                        matched.source.tier === 'official'    ? 'bg-green-500/15 text-green-400' :
+                        matched.source.tier === 'nonpartisan' ? 'bg-blue-500/15 text-blue-400' :
+                        'bg-gray-500/15 text-gray-400'
+                      }`}>{matched.source.tier}</span>
+                      {matched.source.url ? (
+                        <a href={matched.source.url} target="_blank" rel="noopener noreferrer"
+                           className="flex items-center gap-1 text-[#c8a951] hover:text-white transition-colors font-medium">
+                          {matched.source.name} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-gray-500">Source: {matched.source.name}{matched.source.date ? ` (${matched.source.date.split('-')[0]})` : ''}</span>
+                      )}
+                    </div>
+                  )}
+                  {/* Related votes */}
+                  {votes.length > 0 && (() => {
+                    const kw = topic.keywords;
+                    const related = votes.filter(v =>
+                      kw.some(k => v.billTitle.toLowerCase().includes(k) || v.billDescription.toLowerCase().includes(k) || v.category.toLowerCase().includes(k))
+                    ).slice(0, 2);
+                    if (!related.length) return null;
+                    return (
+                      <div className="pt-1 border-t border-[#1e3a5f]">
+                        <div className="text-gray-500 mb-1">Related votes:</div>
+                        {related.map(v => (
+                          <div key={v.id} className="flex items-center gap-1.5 text-xs">
+                            <span className={`font-bold ${v.vote === 'Yea' ? 'text-green-400' : v.vote === 'Nay' ? 'text-red-400' : 'text-gray-400'}`}>{v.vote}</span>
+                            <span className="text-gray-400">{v.billTitle}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -255,32 +369,53 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
               <span className={`font-medium ${partyColor}`}>{politician.party}</span>
               <span className="text-gray-400 flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" />
-                {politician.state}
+                {politician.state}{politician.district ? ` · District ${politician.district}` : ''}
               </span>
               <span className="text-gray-400">
                 {politician.chamber.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               </span>
-              {politician.termEnd && (
-                <span className="text-gray-400 flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Term until {politician.termEnd?.split('-')[0]}
+              {politician.termEnd && (() => {
+                const end = new Date(politician.termEnd);
+                const today = new Date();
+                const monthsLeft = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30));
+                const soon = monthsLeft <= 18 && monthsLeft >= 0;
+                return (
+                  <span className={`flex items-center gap-1 ${soon ? 'text-[#c8a951]' : 'text-gray-400'}`}>
+                    <Clock className="h-3.5 w-3.5" />
+                    Term ends {politician.termEnd.split('-')[0]}
+                    {soon && <span className="text-xs bg-[#c8a951]/20 px-1.5 py-0.5 rounded-full">({monthsLeft}mo)</span>}
+                  </span>
+                );
+              })()}
+              {politician.nextElection && (
+                <span className="flex items-center gap-1 text-blue-400 text-xs bg-blue-400/10 px-2 py-0.5 rounded-full border border-blue-400/20">
+                  <Calendar className="h-3 w-3" />
+                  Next election: {politician.nextElection}
                 </span>
               )}
             </div>
 
-            <p className="text-gray-400 text-sm leading-relaxed mb-3 max-w-2xl">{politician.bio}</p>
+            {/* Political record summary — first 2 sentences only, no biography */}
+            <p className="text-gray-400 text-xs leading-relaxed mb-2 max-w-2xl line-clamp-3">
+              {politician.bio.split('. ').slice(-3).join('. ').trim()}
+            </p>
 
             <div className="flex flex-wrap gap-2">
+              {politician.termStart && (
+                <span className="text-xs text-gray-600 flex items-center gap-1">
+                  <Calendar className="h-3 w-3" /> In office since {politician.termStart.split('-')[0]}
+                </span>
+              )}
               {politician.website && (
                 <a href={politician.website} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-white border border-[#1e3a5f] rounded-lg px-3 py-1.5 hover:border-white transition-colors">
-                  <Globe className="h-3.5 w-3.5" /> Website
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-white border border-[#1e3a5f] rounded-lg px-2 py-1 hover:border-white transition-colors">
+                  <Globe className="h-3 w-3" /> Official site
                 </a>
               )}
               {politician.twitter && (
                 <a href={`https://twitter.com/${politician.twitter}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-white border border-[#1e3a5f] rounded-lg px-3 py-1.5 hover:border-white transition-colors">
-                  <X className="h-3.5 w-3.5" /> @{politician.twitter}
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-white border border-[#1e3a5f] rounded-lg px-2 py-1 hover:border-white transition-colors">
+                  <X className="h-3 w-3" /> @{politician.twitter}
                 </a>
               )}
             </div>
@@ -344,6 +479,8 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
       {/* Tab Content */}
       <div>
         {activeTab === 'overview' && (
+          <>
+          <HotTopicsPanel issues={politician.topIssues} votes={politician.votingRecord} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Top Issues */}
             <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
@@ -412,6 +549,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
               </div>
             </div>
           </div>
+          </>
         )}
 
         {activeTab === 'votes' && (
