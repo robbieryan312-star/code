@@ -3,6 +3,45 @@ export type Party = 'Democrat' | 'Republican' | 'Independent' | 'Green' | 'Liber
 export type Level = 'federal' | 'state' | 'local';
 export type VoteChoice = 'Yea' | 'Nay' | 'Not Voting' | 'Present';
 
+// Source credibility tiers — applied identically to all sources regardless of political lean
+export type SourceTier =
+  | 'official'      // .gov, STOCK Act, FEC, court records — fully verified primary source
+  | 'nonpartisan'   // Ballotpedia, OpenSecrets, GovTrack, Pew, AP, Reuters — established fact-checking
+  | 'media'         // Named mainstream outlet — verifiable story, editorial process unknown
+  | 'alleged'       // Credible but unproven claim — clearly labeled, no adjudication yet
+  | 'unverified';   // Circulating claim with no verified sourcing — shown with maximum caveat
+
+export interface Source {
+  name: string;
+  url?: string;
+  tier: SourceTier;
+  date?: string;
+  description?: string; // what the source specifically documents
+}
+
+export interface Controversy {
+  id: string;
+  title: string;
+  summary: string; // factual description only — no editorial language
+  category: 'Ethics' | 'Legal' | 'Financial' | 'Campaign' | 'Conduct' | 'Policy' | 'Conflict of Interest';
+  status: 'Resolved' | 'Ongoing' | 'Dismissed' | 'Convicted' | 'Acquitted' | 'Under Investigation' | 'Alleged';
+  date: string;
+  sources: Source[];
+  isVerified: boolean; // true only if status is documented by official/nonpartisan source
+}
+
+export interface NewsItem {
+  id: string;
+  headline: string;
+  summary: string;
+  date: string;
+  source: Source;
+  category: string;
+  isOpinion: boolean;   // if true, excluded from main feed
+  isVerified: boolean;  // if false, shown with "UNVERIFIED" badge
+  url?: string;
+}
+
 export interface Politician {
   id: string;
   name: string;
@@ -28,6 +67,8 @@ export interface Politician {
   stockTrades: StockTrade[];
   consistency: ConsistencyData;
   topIssues: Issue[];
+  controversies: Controversy[];
+  news: NewsItem[];
 }
 
 export interface VoteRecord {
@@ -41,6 +82,7 @@ export interface VoteRecord {
   category: string;
   alignsWithCampaign?: boolean;
   alignsWithDonors?: boolean;
+  source: Source;
 }
 
 export interface CampaignFinance {
@@ -98,16 +140,20 @@ export interface StockTrade {
   amount: number;
   amountMin: number;
   amountMax: number;
+  purchasePriceApprox?: number;  // estimated price at trade date (from historical data)
+  currentPrice?: number;          // current price for gain/loss calculation
   date: string;
   disclosureDate: string;
+  daysToDisclose: number;         // days between trade and disclosure (legal max: 45)
   relatedVotes?: string[];
   relatedCommittees?: string[];
-  conflictScore: number; // 0-100, how much this conflicts
+  conflictScore: number;          // 0–100 computed from committee + vote overlap
   sector: string;
+  source: Source;
 }
 
 export interface ConsistencyData {
-  overallScore: number; // 0-100
+  overallScore: number; // 0–100
   campaignPromises: CampaignPromise[];
   partyLineVotePercentage: number;
   lobbyistAlignmentPercentage: number;
@@ -121,6 +167,7 @@ export interface CampaignPromise {
   category: string;
   status: 'Kept' | 'Broken' | 'Compromised' | 'In Progress' | 'Stalled';
   evidence?: string;
+  evidenceSource?: Source;
   relatedVotes?: string[];
 }
 
@@ -135,6 +182,7 @@ export interface Issue {
   position: string;
   detail: string;
   category: string;
+  source?: Source;
 }
 
 export interface Election {

@@ -1,7 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { StockTrade } from '@/lib/types';
-import { TrendingUp, TrendingDown, AlertTriangle, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, Info, ArrowUpDown } from 'lucide-react';
+
+type SortKey = 'date' | 'amount' | 'gain_pct' | 'conflict';
+
+function GainLossBadge({ trade }: { trade: StockTrade }) {
+  if (trade.purchasePriceApprox == null || trade.currentPrice == null || trade.type !== 'Purchase') return null;
+  const pct = ((trade.currentPrice - trade.purchasePriceApprox) / trade.purchasePriceApprox) * 100;
+  const positive = pct >= 0;
+  const Icon = positive ? TrendingUp : TrendingDown;
+  return (
+    <div className={`flex items-center gap-1 text-xs font-bold ${positive ? 'text-green-400' : 'text-red-400'}`}>
+      <Icon className="h-3 w-3" />
+      {positive ? '+' : ''}{pct.toFixed(1)}%
+      <span className="text-xs font-normal opacity-60">since purchase</span>
+    </div>
+  );
+}
 
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -23,6 +40,30 @@ function ConflictBadge({ score }: { score: number }) {
 }
 
 export default function StockTrades({ trades, name }: { trades: StockTrade[]; name: string }) {
+  const [sortBy, setSortBy] = useState<SortKey>('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  function toggleSort(k: SortKey) {
+    if (sortBy === k) setSortDir((d) => d === 'desc' ? 'asc' : 'desc');
+    else { setSortBy(k); setSortDir('desc'); }
+  }
+
+  const sorted = [...trades].sort((a, b) => {
+    let va: number, vb: number;
+    if (sortBy === 'date') {
+      va = new Date(a.date).getTime(); vb = new Date(b.date).getTime();
+    } else if (sortBy === 'amount') {
+      va = a.amount; vb = b.amount;
+    } else if (sortBy === 'gain_pct') {
+      const pctA = (a.purchasePriceApprox != null && a.currentPrice != null) ? ((a.currentPrice - a.purchasePriceApprox) / a.purchasePriceApprox) * 100 : -Infinity;
+      const pctB = (b.purchasePriceApprox != null && b.currentPrice != null) ? ((b.currentPrice - b.purchasePriceApprox) / b.purchasePriceApprox) * 100 : -Infinity;
+      va = pctA; vb = pctB;
+    } else {
+      va = a.conflictScore; vb = b.conflictScore;
+    }
+    return sortDir === 'desc' ? vb - va : va - vb;
+  });
+
   if (trades.length === 0) {
     return (
       <div className="text-center py-12">
@@ -70,9 +111,25 @@ export default function StockTrades({ trades, name }: { trades: StockTrade[]; na
         </div>
       </div>
 
+      {/* Sort Controls */}
+      <div className="flex flex-wrap gap-2 mb-1">
+        <span className="text-xs text-gray-500 self-center"><ArrowUpDown className="inline h-3 w-3 mr-1" />Sort:</span>
+        {([['date', 'Recent'], ['amount', 'Amount'], ['gain_pct', 'Gain/Loss %'], ['conflict', 'Conflict']] as [SortKey, string][]).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => toggleSort(k)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+              sortBy === k ? 'bg-[#c8a951] text-[#0a1628]' : 'bg-[#0a1628] text-gray-400 border border-[#1e3a5f] hover:border-[#c8a951]'
+            }`}
+          >
+            {label}{sortBy === k ? (sortDir === 'desc' ? ' ↓' : ' ↑') : ''}
+          </button>
+        ))}
+      </div>
+
       {/* Trade List */}
       <div className="space-y-3">
-        {trades.map((trade) => (
+        {sorted.map((trade) => (
           <div
             key={trade.id}
             className={`bg-[#0d1f35] rounded-xl p-4 border ${
@@ -99,8 +156,21 @@ export default function StockTrades({ trades, name }: { trades: StockTrade[]; na
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                   <span>Traded: {new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   <span>Disclosed: {new Date(trade.disclosureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span className={`px-2 py-0.5 rounded-full ${trade.daysToDisclose > 30 ? 'bg-yellow-400/10 text-yellow-400' : 'bg-[#1e3a5f]'}`}>
+                    {trade.daysToDisclose}d disclosure
+                  </span>
                   <span className="px-2 py-0.5 bg-[#1e3a5f] rounded-full">{trade.sector}</span>
                 </div>
+
+                {trade.purchasePriceApprox != null && (
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs">
+                    <span className="text-gray-500">At trade: <span className="text-gray-300">${trade.purchasePriceApprox.toFixed(2)}</span></span>
+                    {trade.currentPrice != null && (
+                      <span className="text-gray-500">Current: <span className="text-gray-300">${trade.currentPrice.toFixed(2)}</span></span>
+                    )}
+                    <GainLossBadge trade={trade} />
+                  </div>
+                )}
 
                 {(trade.relatedVotes?.length || trade.relatedCommittees?.length) && (
                   <div className="mt-2 flex flex-wrap gap-1">

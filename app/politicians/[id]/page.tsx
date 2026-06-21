@@ -7,19 +7,23 @@ import VotingRecord from '@/components/politicians/VotingRecord';
 import DonorChart from '@/components/politicians/DonorChart';
 import StockTrades from '@/components/politicians/StockTrades';
 import ConsistencyScore from '@/components/politicians/ConsistencyScore';
+import ControversySection from '@/components/politicians/ControversySection';
+import NewsSection from '@/components/politicians/NewsSection';
 import Link from 'next/link';
 import {
-  ArrowLeft, ExternalLink, X, Globe, Calendar, MapPin,
-  TrendingUp, DollarSign, Vote, AlertTriangle, Briefcase,
+  ArrowLeft, X, Globe, Calendar, MapPin,
+  TrendingUp, DollarSign, Vote, AlertTriangle, Briefcase, Newspaper, Scale,
 } from 'lucide-react';
 import { use } from 'react';
 
 const tabs = [
-  { id: 'overview', label: 'Overview', icon: Briefcase },
-  { id: 'votes', label: 'Voting Record', icon: Vote },
-  { id: 'finance', label: 'Money & Donors', icon: DollarSign },
-  { id: 'stocks', label: 'Stock Trades', icon: TrendingUp },
-  { id: 'consistency', label: 'Promise Tracker', icon: AlertTriangle },
+  { id: 'overview',     label: 'Overview',       icon: Briefcase },
+  { id: 'votes',        label: 'Voting Record',  icon: Vote },
+  { id: 'finance',      label: 'Money & Donors', icon: DollarSign },
+  { id: 'stocks',       label: 'Stock Trades',   icon: TrendingUp },
+  { id: 'consistency',  label: 'Promises',       icon: AlertTriangle },
+  { id: 'controversies',label: 'Controversies',  icon: Scale },
+  { id: 'news',         label: 'News',           icon: Newspaper },
 ];
 
 function formatMoney(n: number): string {
@@ -267,6 +271,20 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
           <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
             <h2 className="text-white font-bold mb-4">Campaign Promise Tracker</h2>
             <ConsistencyScore data={politician.consistency} name={politician.name} />
+          </div>
+        )}
+
+        {activeTab === 'controversies' && (
+          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+            <h2 className="text-white font-bold mb-4">Controversies & Allegations</h2>
+            <ControversySection controversies={politician.controversies} name={politician.name} />
+          </div>
+        )}
+
+        {activeTab === 'news' && (
+          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+            <h2 className="text-white font-bold mb-4">News & Coverage</h2>
+            <NewsSection news={politician.news} name={politician.name} />
           </div>
         )}
       </div>
