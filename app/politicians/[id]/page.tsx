@@ -229,7 +229,7 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
               <div key={i} className="border border-white/[0.07] rounded-xl p-3" style={{ background: 'rgba(5,9,15,0.5)' }}>
                 <div className="flex items-start gap-2.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-white/[0.08]" style={{ background: 'rgba(212,172,82,0.12)' }}>
-                    <span className="text-xs font-bold" style={{ color: '#d4ac52' }}>{endorser.name.split(' ').map((n: string) => n[0]).slice(0,2).join('')}</span>
+                    <span className="text-xs font-bold" style={{ color: '#d4ac52' }}>{endorser.name.split(' ').filter(Boolean).map((n: string) => n[0]).slice(0,2).join('')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     {endorser.politicianId ? (
@@ -280,7 +280,7 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
               <div key={i} className="border border-white/[0.07] rounded-xl p-3" style={{ background: 'rgba(5,9,15,0.5)' }}>
                 <div className="flex items-start gap-2.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-white/[0.08]" style={{ background: 'rgba(96,165,250,0.12)' }}>
-                    <span className="text-blue-400 text-xs font-bold">{endorsed.name.split(' ').map((n: string) => n[0]).slice(0,2).join('')}</span>
+                    <span className="text-blue-400 text-xs font-bold">{endorsed.name.split(' ').filter(Boolean).map((n: string) => n[0]).slice(0,2).join('')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     {endorsed.politicianId ? (
@@ -372,7 +372,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
                 {politician.state}{politician.district ? ` · District ${politician.district}` : ''}
               </span>
               <span className="text-gray-400">
-                {politician.chamber.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                {politician.chamber.replaceAll('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
               </span>
               {politician.termEnd && (() => {
                 const end = new Date(politician.termEnd);
@@ -395,9 +395,9 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
               )}
             </div>
 
-            {/* Political record summary — first 2 sentences only, no biography */}
-            <p className="text-gray-400 text-xs leading-relaxed mb-2 max-w-2xl line-clamp-3">
-              {politician.bio.split('. ').slice(-3).join('. ').trim()}
+            {/* Political record summary */}
+            <p className="text-white/40 text-xs leading-relaxed mb-2 max-w-2xl line-clamp-3">
+              {politician.bio}
             </p>
 
             <div className="flex flex-wrap gap-2">
@@ -463,7 +463,9 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                activeTab !== tab.id ? 'hover:bg-white/[0.08] hover:text-white/70' : ''
+              }`}
               style={activeTab === tab.id
                 ? { background: 'linear-gradient(135deg, #d4ac52 0%, #b8922f 100%)', color: '#05090f', boxShadow: '0 2px 12px rgba(212,172,82,0.3)' }
                 : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.07)' }

@@ -51,7 +51,7 @@ export default function SearchBar({ large = false }: { large?: boolean }) {
         type: 'politician' as const,
         id: p.id,
         name: p.name,
-        subtitle: `${p.party} · ${p.state} · ${p.chamber.replace('_', ' ')}`,
+        subtitle: `${p.party} · ${p.state} · ${p.chamber.replaceAll('_', ' ')}`,
         href: `/politicians/${p.id}`,
       }));
 
@@ -60,7 +60,7 @@ export default function SearchBar({ large = false }: { large?: boolean }) {
   };
 
   const icon = (type: string) => {
-    if (type === 'politician') return <User className="h-4 w-4 text-[#c8a951]" />;
+    if (type === 'politician') return <User className="h-4 w-4" style={{ color: '#d4ac52' }} />;
     if (type === 'state') return <MapPin className="h-4 w-4 text-blue-400" />;
     return <Vote className="h-4 w-4 text-green-400" />;
   };
@@ -68,22 +68,26 @@ export default function SearchBar({ large = false }: { large?: boolean }) {
   return (
     <div ref={containerRef} className="relative w-full">
       <div className={`relative ${large ? 'max-w-2xl mx-auto' : ''}`}>
-        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 ${large ? 'h-5 w-5' : 'h-4 w-4'}`} />
+        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 text-white/30 ${large ? 'h-5 w-5' : 'h-4 w-4'}`} />
         <input
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
-          onFocus={() => query.length >= 2 && setOpen(true)}
-          placeholder={large ? 'Search politicians, states, elections...' : 'Search...'}
-          className={`w-full bg-[#0d1f35] border border-[#1e3a5f] rounded-xl text-white placeholder-gray-500
-            focus:outline-none focus:border-[#c8a951] focus:ring-1 focus:ring-[#c8a951] transition-colors
+          onFocus={() => { if (query.length >= 2) setOpen(true); }}
+          placeholder={large ? 'Search politicians, states, elections...' : 'Search politicians...'}
+          className={`w-full rounded-xl text-white placeholder-white/25 focus:outline-none transition-all
             ${large ? 'pl-12 pr-10 py-4 text-base' : 'pl-10 pr-8 py-2.5 text-sm'}`}
+          style={{
+            background: 'rgba(11,25,41,0.7)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
         />
         {query && (
           <button
             onClick={() => { setQuery(''); setResults([]); setOpen(false); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+            aria-label="Clear search"
           >
             <X className={large ? 'h-5 w-5' : 'h-4 w-4'} />
           </button>
@@ -91,25 +95,27 @@ export default function SearchBar({ large = false }: { large?: boolean }) {
       </div>
 
       {open && results.length > 0 && (
-        <div className={`absolute top-full mt-2 w-full bg-[#0d1f35] border border-[#1e3a5f] rounded-xl shadow-2xl overflow-hidden z-50 ${large ? '' : ''}`}>
+        <div className="absolute top-full mt-2 w-full rounded-xl shadow-2xl overflow-hidden z-50 border border-white/[0.08]"
+             style={{ background: 'rgba(11,25,41,0.97)', backdropFilter: 'blur(20px)' }}>
           {results.map((result) => (
             <Link
               key={result.id}
               href={result.href}
               onClick={() => { setOpen(false); setQuery(''); }}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-[#1e3a5f] transition-colors border-b border-[#1e3a5f] last:border-0"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.05] transition-colors border-b border-white/[0.05] last:border-0"
             >
               <div className="flex-shrink-0">{icon(result.type)}</div>
               <div>
                 <div className="text-white text-sm font-medium">{result.name}</div>
-                <div className="text-gray-400 text-xs">{result.subtitle}</div>
+                <div className="text-white/40 text-xs">{result.subtitle}</div>
               </div>
             </Link>
           ))}
           <Link
             href={`/politicians?q=${query}`}
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-3 bg-[#0a1628] text-[#c8a951] text-sm hover:bg-[#1e3a5f] transition-colors"
+            className="flex items-center gap-2 px-4 py-3 text-sm hover:bg-white/[0.05] transition-colors border-t border-white/[0.05]"
+            style={{ color: '#d4ac52' }}
           >
             <Search className="h-4 w-4" />
             See all results for &quot;{query}&quot;
@@ -118,8 +124,9 @@ export default function SearchBar({ large = false }: { large?: boolean }) {
       )}
 
       {open && query.length >= 2 && results.length === 0 && (
-        <div className="absolute top-full mt-2 w-full bg-[#0d1f35] border border-[#1e3a5f] rounded-xl shadow-2xl p-4 z-50">
-          <p className="text-gray-400 text-sm text-center">No results found for &quot;{query}&quot;</p>
+        <div className="absolute top-full mt-2 w-full rounded-xl shadow-2xl p-4 z-50 border border-white/[0.07]"
+             style={{ background: 'rgba(11,25,41,0.97)' }}>
+          <p className="text-white/35 text-sm text-center">No results found for &quot;{query}&quot;</p>
         </div>
       )}
     </div>

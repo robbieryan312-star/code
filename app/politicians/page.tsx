@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { mockPoliticians, mockStates } from '@/lib/data/mockPoliticians';
 import Link from 'next/link';
 import SearchBar from '@/components/search/SearchBar';
@@ -27,11 +28,19 @@ const selectStyle: React.CSSProperties = {
 };
 
 export default function PoliticiansPage() {
+  const searchParams = useSearchParams();
   const [selectedState, setSelectedState] = useState<string>('');
   const [selectedParty, setSelectedParty] = useState<string>('');
   const [selectedChamber, setSelectedChamber] = useState<string>('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [sortBy, setSortBy] = useState<'name' | 'consistency' | 'lobbyist'>('name');
+
+  useEffect(() => {
+    if (searchParams.get('chamber')) setSelectedChamber(searchParams.get('chamber')!);
+    if (searchParams.get('level')) setSelectedLevel(searchParams.get('level')!);
+    if (searchParams.get('state')) setSelectedState(searchParams.get('state')!);
+    if (searchParams.get('party')) setSelectedParty(searchParams.get('party')!);
+  }, [searchParams]);
 
   const filtered = mockPoliticians
     .filter((p) => {
@@ -72,7 +81,7 @@ export default function PoliticiansPage() {
           {[
             { value: selectedState, set: setSelectedState, opts: [['', 'All States'], ...mockStates.map(s => [s.code, s.name])] },
             { value: selectedParty, set: setSelectedParty, opts: [['', 'All Parties'], ...['Democrat', 'Republican', 'Independent', 'Green', 'Libertarian'].map(p => [p, p])] },
-            { value: selectedChamber, set: setSelectedChamber, opts: [['', 'All Chambers'], ...['senate', 'house', 'governor', 'state_senate', 'state_house', 'mayor', 'city_council'].map(c => [c, c.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())])] },
+            { value: selectedChamber, set: setSelectedChamber, opts: [['', 'All Chambers'], ...['senate', 'house', 'governor', 'state_senate', 'state_house', 'mayor', 'city_council'].map(c => [c, c.replaceAll('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())])] },
             { value: selectedLevel, set: setSelectedLevel, opts: [['', 'All Levels'], ['federal', 'Federal'], ['state', 'State'], ['local', 'Local']] },
             { value: sortBy, set: (v: string) => setSortBy(v as 'name' | 'consistency' | 'lobbyist'), opts: [['name', 'Sort: Name'], ['consistency', 'Sort: Consistency'], ['lobbyist', 'Sort: Lobbyist $']] },
           ].map((sel, idx) => (
@@ -120,7 +129,7 @@ export default function PoliticiansPage() {
                     {politician.name}
                   </div>
                   <div className="text-white/40 text-xs mt-0.5">
-                    {politician.chamber.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} · {politician.state}
+                    {politician.chamber.replaceAll('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())} · {politician.state}
                   </div>
                   <span className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full border ${partyColors[politician.party] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
                     {politician.party}

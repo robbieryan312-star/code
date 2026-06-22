@@ -13,7 +13,7 @@ function formatMoney(n: number): string {
 }
 
 export default function FinancePage() {
-  const [view, setView] = useState<'overview' | 'lobbyists' | 'foreign' | 'donors'>('overview');
+  const [view, setView] = useState<'overview' | 'lobbyists' | 'foreign'>('overview');
   const [sortBy, setSortBy] = useState<'total' | 'lobbyist' | 'pac'>('total');
 
   const sorted = [...mockPoliticians].sort((a, b) => {
