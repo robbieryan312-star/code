@@ -1,4 +1,4 @@
-export type Chamber = 'senate' | 'house' | 'governor' | 'state_senate' | 'state_house' | 'mayor' | 'city_council' | 'school_board';
+export type Chamber = 'senate' | 'house' | 'governor' | 'state_senate' | 'state_house' | 'mayor' | 'city_council' | 'school_board' | 'president';
 export type Party = 'Democrat' | 'Republican' | 'Independent' | 'Green' | 'Libertarian' | 'Other';
 export type Level = 'federal' | 'state' | 'local';
 export type VoteChoice = 'Yea' | 'Nay' | 'Not Voting' | 'Present';
@@ -203,6 +203,24 @@ export interface Issue {
   source?: Source;
 }
 
+export type RaceRating = 'Solid R' | 'Likely R' | 'Lean R' | 'Toss-up' | 'Lean D' | 'Likely D' | 'Solid D';
+
+export interface PollResult {
+  candidateId: string;
+  percentage: number;
+}
+
+export interface Poll {
+  pollster: string;
+  methodology: 'Live Phone' | 'Online Panel' | 'Automated Phone' | 'Mixed';
+  sourceBias: 'Nonpartisan' | 'Center' | 'Center-Left' | 'Center-Right';
+  date: string;
+  sampleSize: number;
+  marginOfError: number;
+  pollType: 'primary' | 'general';
+  results: PollResult[];
+}
+
 export interface Election {
   id: string;
   title: string;
@@ -219,6 +237,9 @@ export interface Election {
   registrationDeadline?: string;
   earlyVotingStart?: string;
   dataNote?: string;
+  raceRating?: RaceRating;
+  raceRatingSource?: string;
+  polls?: Poll[];
 }
 
 export interface Candidate {
@@ -231,6 +252,12 @@ export interface Candidate {
   fundsRaised: number;
   endorsements: string[];
   incumbentId?: string;
+  winProbability?: number;
+  primaryProbability?: number;
+  approvalRating?: number;
+  approvalPollster?: string;
+  approvalSampleSize?: number;
+  approvalDate?: string;
 }
 
 export interface USState {

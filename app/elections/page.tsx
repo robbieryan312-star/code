@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { mockElections } from '@/lib/data/mockElections';
+import { Poll } from '@/lib/types';
 import Link from 'next/link';
-import { Calendar, MapPin, Users, DollarSign, ArrowRight, Filter, Vote, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Users, ArrowRight, Filter, Vote, AlertTriangle, ExternalLink, TrendingUp, BarChart2, Star } from 'lucide-react';
 
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -16,6 +17,61 @@ const partyColors: Record<string, string> = {
   Republican: 'bg-red-500/20 text-red-400 border-red-500/30',
   Independent: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
 };
+
+const partyBarColor: Record<string, string> = {
+  Democrat: 'bg-blue-500',
+  Republican: 'bg-red-500',
+  Independent: 'bg-gray-400',
+};
+
+const raceRatingStyle: Record<string, string> = {
+  'Solid R':   'bg-red-700/30 text-red-300 border-red-700/40',
+  'Likely R':  'bg-red-500/20 text-red-400 border-red-500/30',
+  'Lean R':    'bg-red-400/15 text-red-400 border-red-400/25',
+  'Toss-up':   'bg-purple-500/20 text-purple-300 border-purple-500/30',
+  'Lean D':    'bg-blue-400/15 text-blue-400 border-blue-400/25',
+  'Likely D':  'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  'Solid D':   'bg-blue-700/30 text-blue-300 border-blue-700/40',
+};
+
+function LatestPollRow({ polls, candidateIds }: { polls: Poll[]; candidateIds: string[] }) {
+  if (!polls || polls.length === 0) return null;
+  const latest = [...polls].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const relevantResults = latest.results.filter((r) => candidateIds.includes(r.candidateId));
+  if (relevantResults.length === 0) return null;
+
+  return (
+    <div className="mt-4 bg-[#0a1628] rounded-xl p-3 border border-[#1e3a5f]">
+      <div className="flex items-center gap-1.5 mb-2">
+        <BarChart2 className="h-3.5 w-3.5 text-[#c8a951]" />
+        <span className="text-xs font-semibold text-[#c8a951] uppercase tracking-wide">
+          Latest Poll — {latest.pollType === 'primary' ? 'Primary' : 'General Election'}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-4 mb-1.5">
+        {relevantResults.map((r) => (
+          <span key={r.candidateId} className="text-sm text-white">
+            <span className="text-gray-400 text-xs">{r.candidateId.split('-').pop()?.replace(/([A-Z])/g, ' $1') || r.candidateId}: </span>
+            <strong>{r.percentage}%</strong>
+          </span>
+        ))}
+      </div>
+      <div className="text-[10px] text-gray-500 flex flex-wrap gap-2">
+        <span>{latest.pollster}</span>
+        <span>·</span>
+        <span>{new Date(latest.date + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+        <span>·</span>
+        <span>n={latest.sampleSize.toLocaleString()}</span>
+        <span>·</span>
+        <span>MOE ±{latest.marginOfError}%</span>
+        <span>·</span>
+        <span>{latest.methodology}</span>
+        <span>·</span>
+        <span className="text-[#c8a951]/70">Source rated {latest.sourceBias} (AllSides)</span>
+      </div>
+    </div>
+  );
+}
 
 export default function ElectionsPage() {
   const [levelFilter, setLevelFilter] = useState<string>('');
@@ -35,31 +91,35 @@ export default function ElectionsPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Elections</h1>
-        <p className="text-gray-400">Find upcoming elections and research every candidate</p>
+        <p className="text-gray-400">Research every candidate — platform, money, and polling data in one place</p>
       </div>
 
       {/* ── SAMPLE DATA DISCLAIMER ── */}
       <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4 mb-6 flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <div className="text-yellow-400 font-semibold text-sm mb-1">Sample / Illustrative Election Data</div>
+          <div className="text-yellow-400 font-semibold text-sm mb-1">Illustrative Data — Verify Before Voting</div>
           <p className="text-gray-300 text-xs leading-relaxed mb-2">
-            This page contains sample data for demonstration. Candidate fields change frequently — announcements,
-            withdrawals, and primary challengers are not always reflected in real time. <span className="text-white font-medium">Do not use this data to make actual voting decisions.</span>
+            Candidate fields change frequently. Polling averages, win probabilities, and approval ratings shown here
+            are <span className="text-white font-medium">illustrative estimates for demonstration only</span> — not
+            official projections. Race ratings use a Cook Political Report–style scale. <span className="text-white font-medium">Do not use this data to make actual voting decisions.</span>
           </p>
           <div className="flex flex-wrap gap-3 text-xs">
-            <span className="text-gray-400">Verify candidates at:</span>
+            <span className="text-gray-400">Verify at:</span>
             <a href="https://www.ballotpedia.org" target="_blank" rel="noopener noreferrer"
                className="text-[#c8a951] hover:text-white flex items-center gap-0.5 transition-colors">
               Ballotpedia.org <ExternalLink className="h-3 w-3" />
+            </a>
+            <span className="text-gray-600">·</span>
+            <a href="https://www.realclearpolitics.com" target="_blank" rel="noopener noreferrer"
+               className="text-[#c8a951] hover:text-white flex items-center gap-0.5 transition-colors">
+              RealClearPolitics <ExternalLink className="h-3 w-3" />
             </a>
             <span className="text-gray-600">·</span>
             <a href="https://www.vote.gov" target="_blank" rel="noopener noreferrer"
                className="text-[#c8a951] hover:text-white flex items-center gap-0.5 transition-colors">
               vote.gov <ExternalLink className="h-3 w-3" />
             </a>
-            <span className="text-gray-600">·</span>
-            <span className="text-gray-400">Your state's official election authority</span>
           </div>
         </div>
       </div>
@@ -94,137 +154,149 @@ export default function ElectionsPage() {
             onChange={(e) => setStateFilter(e.target.value)}
             className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-[#c8a951]"
           >
-            <option value="">All States</option>
-            {states.map((s) => <option key={s} value={s}>{s}</option>)}
+            <option value="">All States / National</option>
+            {states.map((s) => <option key={s} value={s}>{s === 'NAT' ? 'National' : s}</option>)}
           </select>
         </div>
       </div>
 
-      <p className="text-gray-500 text-sm mb-4">{filtered.length} elections</p>
+      <p className="text-gray-500 text-sm mb-4">{filtered.length} election{filtered.length !== 1 ? 's' : ''}</p>
 
       <div className="space-y-5">
-        {filtered.map((election) => (
-          <div key={election.id} className="bg-[#0d1f35] rounded-2xl border border-[#1e3a5f] overflow-hidden">
-            {/* Election Header */}
-            <div className="p-5 border-b border-[#1e3a5f]">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      election.level === 'federal' ? 'bg-blue-400/20 text-blue-400' :
-                      election.level === 'state' ? 'bg-purple-400/20 text-purple-400' :
-                      'bg-green-400/20 text-green-400'
-                    }`}>
-                      {election.level.charAt(0).toUpperCase() + election.level.slice(1)}
-                    </span>
-                    {election.isPrimary && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-orange-400/20 text-orange-400">Primary</span>
-                    )}
-                    {election.isUpcoming && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-[#c8a951]/20 text-[#c8a951]">Upcoming</span>
-                    )}
-                  </div>
-                  <h2 className="text-xl font-bold text-white mb-1">{election.title}</h2>
-                  <div className="flex items-center gap-4 text-sm text-gray-400 flex-wrap">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {new Date(election.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {election.state}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      {election.candidates.length} candidates
-                    </span>
-                  </div>
-                </div>
+        {filtered.map((election) => {
+          const latestPollCandidateIds = election.candidates.map((c) => c.id);
+          // For presidential, show grouped by party
+          const rParty = election.candidates.filter((c) => c.party === 'Republican');
+          const dParty = election.candidates.filter((c) => c.party === 'Democrat');
+          const isPresidential = election.office.toLowerCase().includes('president');
 
-                {election.registrationDeadline && (
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500 mb-0.5">Registration Deadline</div>
-                    <div className="text-white font-medium text-sm">
-                      {new Date(election.registrationDeadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Per-election data note */}
-            {election.dataNote && (
-              <div className="px-5 py-2 bg-yellow-400/5 border-b border-yellow-400/20 flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 flex-shrink-0" />
-                <span className="text-yellow-400/80 text-xs">{election.dataNote}</span>
-              </div>
-            )}
-
-            {/* Candidates */}
-            <div className="p-5">
-              <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">Candidates</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {election.candidates.map((candidate) => (
-                  <div key={candidate.id} className="bg-[#0a1628] rounded-xl p-4 border border-[#1e3a5f]">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="text-white font-semibold">{candidate.name}</div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full border ${partyColors[candidate.party] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
-                          {candidate.party}
+          return (
+            <div key={election.id} className="bg-[#0d1f35] rounded-2xl border border-[#1e3a5f] overflow-hidden">
+              {/* Election Header */}
+              <div className="p-5 border-b border-[#1e3a5f]">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        election.level === 'federal' ? 'bg-blue-400/20 text-blue-400' :
+                        election.level === 'state' ? 'bg-purple-400/20 text-purple-400' :
+                        'bg-green-400/20 text-green-400'
+                      }`}>
+                        {election.level === 'federal' && election.stateCode === 'NAT' ? 'National' : election.level.charAt(0).toUpperCase() + election.level.slice(1)}
+                      </span>
+                      {election.isPrimary && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-400/20 text-orange-400">Primary Phase</span>
+                      )}
+                      {election.isUpcoming && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#c8a951]/20 text-[#c8a951]">Upcoming</span>
+                      )}
+                      {election.raceRating && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold ${raceRatingStyle[election.raceRating] || ''}`}>
+                          {election.raceRating}
                         </span>
+                      )}
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-1">{election.title}</h2>
+                    <div className="flex items-center gap-4 text-sm text-gray-400 flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {new Date(election.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {election.stateCode === 'NAT' ? 'National' : election.state}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {election.candidates.length} candidate{election.candidates.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {election.raceRating && election.raceRatingSource && (
+                      <div className="mt-1 text-[10px] text-gray-600">
+                        Race rating source: {election.raceRatingSource}
                       </div>
-                      <div className="text-right">
-                        <div className="text-[#c8a951] font-bold text-sm">{formatMoney(candidate.fundsRaised)}</div>
-                        <div className="text-gray-500 text-xs">raised</div>
+                    )}
+                  </div>
+
+                  {election.registrationDeadline && (
+                    <div className="text-right shrink-0">
+                      <div className="text-xs text-gray-500 mb-0.5">Registration Deadline</div>
+                      <div className="text-white font-medium text-sm">
+                        {new Date(election.registrationDeadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </div>
                     </div>
+                  )}
+                </div>
+              </div>
 
-                    {/* Top Issues */}
-                    <div className="space-y-1.5 mb-3">
-                      {candidate.topIssues.slice(0, 2).map((issue) => (
-                        <div key={issue.name} className="text-xs">
-                          <span className="text-[#c8a951] font-medium">{issue.name}: </span>
-                          <span className="text-gray-400">{issue.position}</span>
-                        </div>
-                      ))}
-                    </div>
+              {/* Per-election data note */}
+              {election.dataNote && (
+                <div className="px-5 py-2 bg-yellow-400/5 border-b border-yellow-400/20 flex items-center gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 flex-shrink-0" />
+                  <span className="text-yellow-400/80 text-xs">{election.dataNote}</span>
+                </div>
+              )}
 
-                    {/* Endorsements */}
-                    {candidate.endorsements.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {candidate.endorsements.slice(0, 3).map((e) => (
-                          <span key={e} className="text-xs bg-[#1e3a5f] text-gray-400 px-1.5 py-0.5 rounded">
-                            {e}
-                          </span>
+              {/* Candidates */}
+              <div className="p-5">
+                {isPresidential && rParty.length > 0 && dParty.length > 0 ? (
+                  /* Presidential: two-column by party */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Republican column */}
+                    <div>
+                      <div className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                        Republican Primary Frontrunners
+                      </div>
+                      <div className="space-y-2">
+                        {rParty.map((c) => (
+                          <CandidateCard key={c.id} candidate={c} isPrimary={election.isPrimary} />
                         ))}
                       </div>
-                    )}
-
-                    {/* Link to existing politician profile */}
-                    {candidate.incumbentId && (
-                      <Link
-                        href={`/politicians/${candidate.incumbentId}`}
-                        className="mt-3 flex items-center gap-1 text-xs text-[#c8a951] hover:text-white transition-colors"
-                      >
-                        View full record <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    )}
+                    </div>
+                    {/* Democrat column */}
+                    <div>
+                      <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                        Democratic Primary Frontrunners
+                      </div>
+                      <div className="space-y-2">
+                        {dParty.map((c) => (
+                          <CandidateCard key={c.id} candidate={c} isPrimary={election.isPrimary} />
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+                ) : (
+                  /* Standard grid */
+                  <>
+                    <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">Candidates</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {election.candidates.map((candidate) => (
+                        <CandidateCard key={candidate.id} candidate={candidate} isPrimary={election.isPrimary} />
+                      ))}
+                    </div>
+                  </>
+                )}
 
-              <div className="mt-4 flex gap-3">
-                <Link
-                  href={`/compare?election=${election.id}`}
-                  className="flex items-center gap-1.5 text-sm bg-[#1e3a5f] hover:bg-[#2d5a8e] text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  <Vote className="h-4 w-4" />
-                  Compare Candidates
-                </Link>
+                {/* Latest polls */}
+                {election.polls && (
+                  <LatestPollRow polls={election.polls} candidateIds={latestPollCandidateIds} />
+                )}
+
+                <div className="mt-4 flex gap-3">
+                  <Link
+                    href={`/compare?election=${election.id}`}
+                    className="flex items-center gap-1.5 text-sm bg-[#1e3a5f] hover:bg-[#2d5a8e] text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Vote className="h-4 w-4" />
+                    Compare Candidates
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filtered.length === 0 && (
@@ -235,6 +307,93 @@ export default function ElectionsPage() {
             Clear filters
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Candidate card sub-component ──────────────────────────────────────────────
+import { Candidate } from '@/lib/types';
+
+function CandidateCard({ candidate, isPrimary }: { candidate: Candidate; isPrimary: boolean }) {
+  const prob = isPrimary ? candidate.primaryProbability : candidate.winProbability;
+  const probLabel = isPrimary ? 'Primary prob.' : 'Win prob.';
+  const barColor = partyBarColor[candidate.party] || 'bg-gray-400';
+
+  return (
+    <div className="bg-[#0a1628] rounded-xl p-4 border border-[#1e3a5f]">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="text-white font-semibold truncate">{candidate.name}</div>
+          <span className={`text-xs px-2 py-0.5 rounded-full border ${partyColors[candidate.party] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
+            {candidate.party}
+          </span>
+        </div>
+        <div className="text-right ml-3 shrink-0">
+          <div className="text-[#c8a951] font-bold text-sm">{candidate.fundsRaised > 0 ? formatMoney(candidate.fundsRaised) : '—'}</div>
+          <div className="text-gray-500 text-xs">raised</div>
+        </div>
+      </div>
+
+      {/* Win / primary probability */}
+      {prob !== undefined && (
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-0.5">
+            <span className="text-[10px] text-gray-500 uppercase tracking-wide">{probLabel}</span>
+            <span className="text-xs font-bold text-white">{prob}%</span>
+          </div>
+          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${prob}%` }} />
+          </div>
+        </div>
+      )}
+
+      {/* Approval rating (incumbents only) */}
+      {candidate.approvalRating !== undefined && (
+        <div className="mb-3 flex items-center gap-1.5 bg-white/[0.03] rounded-lg px-2 py-1.5">
+          <Star className="h-3 w-3 text-[#c8a951] shrink-0" />
+          <div>
+            <span className="text-xs text-white font-semibold">{candidate.approvalRating}% approval</span>
+            {candidate.approvalPollster && (
+              <span className="text-[10px] text-gray-500 ml-1.5">
+                {candidate.approvalPollster}
+                {candidate.approvalDate ? ` · ${new Date(candidate.approvalDate + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : ''}
+                {candidate.approvalSampleSize ? ` · n=${candidate.approvalSampleSize.toLocaleString()}` : ''}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Top Issues */}
+      <div className="space-y-1.5 mb-3">
+        {candidate.topIssues.slice(0, 2).map((issue) => (
+          <div key={issue.name} className="text-xs">
+            <span className="text-[#c8a951] font-medium">{issue.name}: </span>
+            <span className="text-gray-400">{issue.position}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Endorsements */}
+      {candidate.endorsements.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {candidate.endorsements.slice(0, 3).map((e) => (
+            <span key={e} className="text-xs bg-[#1e3a5f] text-gray-400 px-1.5 py-0.5 rounded">
+              {e}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Link to politician profile */}
+      {candidate.incumbentId && (
+        <Link
+          href={`/politicians/${candidate.incumbentId}`}
+          className="flex items-center gap-1 text-xs text-[#c8a951] hover:text-white transition-colors"
+        >
+          View full record <ArrowRight className="h-3 w-3" />
+        </Link>
       )}
     </div>
   );
