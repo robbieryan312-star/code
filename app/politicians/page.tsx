@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { mockPoliticians, mockStates } from '@/lib/data/mockPoliticians';
 import Link from 'next/link';
@@ -27,23 +27,34 @@ const selectStyle: React.CSSProperties = {
   color: 'rgba(255,255,255,0.6)',
 };
 
-export default function PoliticiansPage() {
+function PoliticiansContent() {
   const searchParams = useSearchParams();
   const [selectedState, setSelectedState] = useState<string>('');
   const [selectedParty, setSelectedParty] = useState<string>('');
   const [selectedChamber, setSelectedChamber] = useState<string>('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [sortBy, setSortBy] = useState<'name' | 'consistency' | 'lobbyist'>('name');
+  const [searchText, setSearchText] = useState<string>('');
 
   useEffect(() => {
-    if (searchParams.get('chamber')) setSelectedChamber(searchParams.get('chamber')!);
-    if (searchParams.get('level')) setSelectedLevel(searchParams.get('level')!);
-    if (searchParams.get('state')) setSelectedState(searchParams.get('state')!);
-    if (searchParams.get('party')) setSelectedParty(searchParams.get('party')!);
+    const chamber = searchParams.get('chamber');
+    const level = searchParams.get('level');
+    const state = searchParams.get('state');
+    const party = searchParams.get('party');
+    const q = searchParams.get('q');
+    if (chamber) setSelectedChamber(chamber);
+    if (level) setSelectedLevel(level);
+    if (state) setSelectedState(state);
+    if (party) setSelectedParty(party);
+    if (q) setSearchText(q);
   }, [searchParams]);
 
   const filtered = mockPoliticians
     .filter((p) => {
+      if (searchText) {
+        const q = searchText.toLowerCase();
+        if (!p.name.toLowerCase().includes(q) && !p.party.toLowerCase().includes(q) && !p.state.toLowerCase().includes(q)) return false;
+      }
       if (selectedState && p.stateCode !== selectedState) return false;
       if (selectedParty && p.party !== selectedParty) return false;
       if (selectedChamber && p.chamber !== selectedChamber) return false;
@@ -193,5 +204,13 @@ export default function PoliticiansPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PoliticiansPage() {
+  return (
+    <Suspense>
+      <PoliticiansContent />
+    </Suspense>
   );
 }

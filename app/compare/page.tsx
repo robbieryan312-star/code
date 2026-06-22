@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { mockPoliticians } from '@/lib/data/mockPoliticians';
 import { Politician } from '@/lib/types';
@@ -37,7 +37,7 @@ function CompareCell({ label, aVal, bVal, higherIsBetter = true, format = 'numbe
 const cardStyle = { background: 'rgba(11,25,41,0.7)', backdropFilter: 'blur(12px)' };
 const headerStyle = { background: 'rgba(5,9,15,0.5)' };
 
-export default function ComparePage() {
+function CompareContent() {
   const searchParams = useSearchParams();
   const defaultA = mockPoliticians[0]?.id || '';
   const defaultB = mockPoliticians[1]?.id || '';
@@ -50,10 +50,6 @@ export default function ComparePage() {
     const paramB = searchParams.get('b');
     if (paramA && mockPoliticians.find(p => p.id === paramA)) setAPick(paramA);
     if (paramB && mockPoliticians.find(p => p.id === paramB)) setBPick(paramB);
-    else if (paramA) {
-      const fallback = mockPoliticians.find(p => p.id !== paramA);
-      if (fallback) setBPick(fallback.id);
-    }
   }, [searchParams]);
 
   const pA = mockPoliticians.find((p) => p.id === aPick);
@@ -230,5 +226,13 @@ export default function ComparePage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense>
+      <CompareContent />
+    </Suspense>
   );
 }

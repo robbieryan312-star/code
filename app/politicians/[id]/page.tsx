@@ -320,14 +320,16 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
   );
 }
 
-export default function PoliticianProfile({ params }: { params: Promise<{ id: string }> }) {
+export default function PoliticianProfile({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { id } = use(params);
+  const { tab } = use(searchParams);
   const politician = mockPoliticians.find((p) => p.id === id);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => tab ?? 'overview');
 
   if (!politician) return notFound();
 
   const lobbyistTotal = politician.campaignFinance.lobbyistMoney.reduce((s, l) => s + l.amount, 0);
+  const highConflictTrades = politician.stockTrades.filter((t) => t.conflictScore >= 70);
   const partyColor =
     politician.party === 'Democrat' ? 'text-blue-400' :
     politician.party === 'Republican' ? 'text-red-400' :
@@ -378,7 +380,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
                 const end = new Date(politician.termEnd);
                 const today = new Date();
                 const monthsLeft = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30));
-                const soon = monthsLeft <= 18 && monthsLeft >= 0;
+                const soon = monthsLeft > 0 && monthsLeft <= 18;
                 return (
                   <span className={`flex items-center gap-1 ${soon ? 'text-[#c8a951]' : 'text-gray-400'}`}>
                     <Clock className="h-3.5 w-3.5" />
@@ -461,6 +463,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
           const Icon = tab.icon;
           return (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
@@ -530,10 +533,8 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">High-Conflict Trades</span>
-                    <span className={`font-medium ${politician.stockTrades.filter((t) => t.conflictScore >= 70).length > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                      {politician.stockTrades.filter((t) => t.conflictScore >= 70).length > 0
-                        ? `${politician.stockTrades.filter((t) => t.conflictScore >= 70).length} detected`
-                        : 'None'}
+                    <span className={`font-medium ${highConflictTrades.length > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                      {highConflictTrades.length > 0 ? `${highConflictTrades.length} detected` : 'None'}
                     </span>
                   </div>
                 </div>
