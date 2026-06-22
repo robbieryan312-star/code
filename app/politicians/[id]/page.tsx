@@ -352,7 +352,7 @@ export default function PoliticianProfile({ params, searchParams }: { params: Pr
           <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-white/[0.1]"
                style={{ background: 'linear-gradient(135deg, #0f2236 0%, #07101f 100%)' }}>
             {politician.imageUrl ? (
-              <img src={politician.imageUrl} alt={politician.name} className="w-full h-full object-cover" />
+              <img src={politician.imageUrl} alt={politician.name} className="w-full h-full object-cover object-top" />
             ) : (
               <span className="font-bold text-4xl" style={{ color: '#d4ac52' }}>{politician.firstName[0]}{politician.lastName[0]}</span>
             )}

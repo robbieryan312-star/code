@@ -151,7 +151,7 @@ export default function FinancePage() {
                   >
                     <div className="col-span-2 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-xs font-bold text-[#c8a951] overflow-hidden">
-                        {p.imageUrl ? <img src={p.imageUrl} alt="" className="w-full h-full object-cover" /> : p.firstName[0]}
+                        {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover object-top" /> : p.firstName[0]}
                       </div>
                       <div>
                         <div className="text-white text-sm font-medium">{p.name}</div>

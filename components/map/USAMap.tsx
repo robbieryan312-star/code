@@ -223,7 +223,7 @@ function PoliticianRow({ politician }: { politician: Politician }) {
       >
         <div className="w-9 h-9 rounded-full bg-[#1e3a5f] flex items-center justify-center overflow-hidden flex-shrink-0">
           {politician.imageUrl
-            ? <img src={politician.imageUrl} alt={politician.name} className="w-full h-full object-cover" />
+            ? <img src={politician.imageUrl} alt={politician.name} className="w-full h-full object-cover object-top" />
             : <span className="text-[#c8a951] text-xs font-bold">{politician.firstName[0]}{politician.lastName[0]}</span>}
         </div>
         <div className="flex-1 min-w-0">

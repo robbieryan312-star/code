@@ -215,7 +215,7 @@ export default function HomePage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-full bg-[#1e3a5f] flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover object-top" />
                   ) : (
                     <span className="text-[#c8a951] font-bold text-lg">{p.firstName[0]}{p.lastName[0]}</span>
                   )}

@@ -116,7 +116,7 @@ function CompareContent() {
                   <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border border-white/[0.09]"
                        style={{ background: 'linear-gradient(135deg, #0f2236 0%, #07101f 100%)' }}>
                     {p.imageUrl ? (
-                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover object-top" />
                     ) : (
                       <span className="font-bold text-xl" style={{ color: '#d4ac52' }}>{p.firstName[0]}{p.lastName[0]}</span>
                     )}
