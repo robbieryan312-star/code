@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { mockElections } from '@/lib/data/mockElections';
 import Link from 'next/link';
-import { Calendar, MapPin, Users, DollarSign, ArrowRight, Filter, Vote } from 'lucide-react';
+import { Calendar, MapPin, Users, DollarSign, ArrowRight, Filter, Vote, AlertTriangle, ExternalLink } from 'lucide-react';
 
 function formatMoney(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -33,9 +33,35 @@ export default function ElectionsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Elections</h1>
         <p className="text-gray-400">Find upcoming elections and research every candidate</p>
+      </div>
+
+      {/* ── SAMPLE DATA DISCLAIMER ── */}
+      <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4 mb-6 flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <div className="text-yellow-400 font-semibold text-sm mb-1">Sample / Illustrative Election Data</div>
+          <p className="text-gray-300 text-xs leading-relaxed mb-2">
+            This page contains sample data for demonstration. Candidate fields change frequently — announcements,
+            withdrawals, and primary challengers are not always reflected in real time. <span className="text-white font-medium">Do not use this data to make actual voting decisions.</span>
+          </p>
+          <div className="flex flex-wrap gap-3 text-xs">
+            <span className="text-gray-400">Verify candidates at:</span>
+            <a href="https://www.ballotpedia.org" target="_blank" rel="noopener noreferrer"
+               className="text-[#c8a951] hover:text-white flex items-center gap-0.5 transition-colors">
+              Ballotpedia.org <ExternalLink className="h-3 w-3" />
+            </a>
+            <span className="text-gray-600">·</span>
+            <a href="https://www.vote.gov" target="_blank" rel="noopener noreferrer"
+               className="text-[#c8a951] hover:text-white flex items-center gap-0.5 transition-colors">
+              vote.gov <ExternalLink className="h-3 w-3" />
+            </a>
+            <span className="text-gray-600">·</span>
+            <span className="text-gray-400">Your state's official election authority</span>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
@@ -125,6 +151,14 @@ export default function ElectionsPage() {
                 )}
               </div>
             </div>
+
+            {/* Per-election data note */}
+            {election.dataNote && (
+              <div className="px-5 py-2 bg-yellow-400/5 border-b border-yellow-400/20 flex items-center gap-2">
+                <AlertTriangle className="h-3.5 w-3.5 text-yellow-400 flex-shrink-0" />
+                <span className="text-yellow-400/80 text-xs">{election.dataNote}</span>
+              </div>
+            )}
 
             {/* Candidates */}
             <div className="p-5">

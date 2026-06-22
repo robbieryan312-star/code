@@ -58,6 +58,12 @@ function CompareContent() {
   const allIssueCategories = pA && pB
     ? [...new Set([...pA.topIssues.map((i) => i.category), ...pB.topIssues.map((i) => i.category)])]
     : [];
+  const sharedCategories = allIssueCategories.filter((cat) =>
+    pA?.topIssues.some((i) => i.category === cat) && pB?.topIssues.some((i) => i.category === cat)
+  );
+  const uniqueCategories = allIssueCategories.filter((cat) =>
+    !(pA?.topIssues.some((i) => i.category === cat) && pB?.topIssues.some((i) => i.category === cat))
+  );
 
   const selectStyle: React.CSSProperties = {
     background: 'rgba(5,9,15,0.7)',
@@ -132,6 +138,86 @@ function CompareContent() {
             ))}
           </div>
 
+          {/* Platform & Where They Stand — shown first so voters can align by agenda */}
+          <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={cardStyle}>
+            <div className="px-5 py-4 border-b border-white/[0.06]" style={headerStyle}>
+              <h2 className="text-white font-bold">Platform & Where They Stand</h2>
+              <p className="text-white/35 text-xs mt-1">
+                Compare each candidate&apos;s stated positions to find where your priorities align
+              </p>
+              <div className="flex items-center gap-3 mt-2.5 text-xs text-white/30">
+                <span>{sharedCategories.length} shared policy areas</span>
+                {uniqueCategories.length > 0 && <><span>·</span><span>{uniqueCategories.length} stated by only one</span></>}
+              </div>
+            </div>
+
+            {sharedCategories.length > 0 && (
+              <div>
+                <div className="px-5 py-2 border-b border-white/[0.04] bg-white/[0.015]">
+                  <span className="text-[10px] text-white/25 uppercase tracking-widest font-medium">Both candidates have stated positions</span>
+                </div>
+                {sharedCategories.map((cat) => {
+                  const aIssue = pA.topIssues.find((i) => i.category === cat)!;
+                  const bIssue = pB.topIssues.find((i) => i.category === cat)!;
+                  return (
+                    <div key={cat} className="grid grid-cols-[1fr_90px_1fr] gap-3 px-5 py-4 border-b border-white/[0.04] last:border-0">
+                      <div>
+                        <div className="text-sm font-semibold text-white mb-1">{aIssue.position}</div>
+                        <div className="text-white/40 text-xs leading-relaxed">{aIssue.detail}</div>
+                      </div>
+                      <div className="flex items-start justify-center pt-0.5">
+                        <span className="text-[10px] text-white/35 text-center px-2 py-1 rounded-full border border-white/[0.07] leading-tight">{cat}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-white mb-1">{bIssue.position}</div>
+                        <div className="text-white/40 text-xs leading-relaxed">{bIssue.detail}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {uniqueCategories.length > 0 && (
+              <div>
+                <div className="px-5 py-2 border-b border-white/[0.04] bg-white/[0.015]">
+                  <span className="text-[10px] text-white/25 uppercase tracking-widest font-medium">Positions stated by one candidate only</span>
+                </div>
+                {uniqueCategories.map((cat) => {
+                  const aIssue = pA.topIssues.find((i) => i.category === cat);
+                  const bIssue = pB.topIssues.find((i) => i.category === cat);
+                  return (
+                    <div key={cat} className="grid grid-cols-[1fr_90px_1fr] gap-3 px-5 py-4 border-b border-white/[0.04] last:border-0">
+                      <div>
+                        {aIssue ? (
+                          <>
+                            <div className="text-sm font-semibold text-white mb-1">{aIssue.position}</div>
+                            <div className="text-white/40 text-xs leading-relaxed">{aIssue.detail}</div>
+                          </>
+                        ) : (
+                          <div className="text-white/20 text-xs italic mt-1">No stated position</div>
+                        )}
+                      </div>
+                      <div className="flex items-start justify-center pt-0.5">
+                        <span className="text-[10px] text-white/35 text-center px-2 py-1 rounded-full border border-white/[0.07] leading-tight">{cat}</span>
+                      </div>
+                      <div className="text-right">
+                        {bIssue ? (
+                          <>
+                            <div className="text-sm font-semibold text-white mb-1">{bIssue.position}</div>
+                            <div className="text-white/40 text-xs leading-relaxed">{bIssue.detail}</div>
+                          </>
+                        ) : (
+                          <div className="text-white/20 text-xs italic mt-1 text-left">No stated position</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Numeric Comparison */}
           <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={cardStyle}>
             <div className="px-5 py-4 border-b border-white/[0.06]" style={headerStyle}>
@@ -144,53 +230,13 @@ function CompareContent() {
             </div>
             <div className="px-5">
               <CompareCell label="Consistency Score" aVal={pA.consistency.overallScore} bVal={pB.consistency.overallScore} />
+              <CompareCell label="Bipartisan Vote %" aVal={100 - pA.consistency.partyLineVotePercentage} bVal={100 - pB.consistency.partyLineVotePercentage} higherIsBetter={true} format="percent" />
               <CompareCell label="Total Raised" aVal={pA.campaignFinance.totalRaised} bVal={pB.campaignFinance.totalRaised} higherIsBetter={false} format="money" />
               <CompareCell label="Individual Donors %" aVal={pA.campaignFinance.totalRaised > 0 ? Math.round((pA.campaignFinance.individualDonations / pA.campaignFinance.totalRaised) * 100) : 0} bVal={pB.campaignFinance.totalRaised > 0 ? Math.round((pB.campaignFinance.individualDonations / pB.campaignFinance.totalRaised) * 100) : 0} higherIsBetter={true} format="percent" />
               <CompareCell label="Lobbyist Money" aVal={pA.campaignFinance.lobbyistMoney.reduce((s, l) => s + l.amount, 0)} bVal={pB.campaignFinance.lobbyistMoney.reduce((s, l) => s + l.amount, 0)} higherIsBetter={false} format="money" />
               <CompareCell label="Lobbyist Alignment %" aVal={pA.consistency.lobbyistAlignmentPercentage} bVal={pB.consistency.lobbyistAlignmentPercentage} higherIsBetter={false} format="percent" />
-              <CompareCell label="Party-Line Vote %" aVal={pA.consistency.partyLineVotePercentage} bVal={pB.consistency.partyLineVotePercentage} higherIsBetter={false} format="percent" />
               <CompareCell label="Stock Trades" aVal={pA.stockTrades.length} bVal={pB.stockTrades.length} higherIsBetter={false} />
               <CompareCell label="High-Conflict Trades" aVal={pA.stockTrades.filter((t) => t.conflictScore >= 70).length} bVal={pB.stockTrades.filter((t) => t.conflictScore >= 70).length} higherIsBetter={false} />
-            </div>
-          </div>
-
-          {/* Issue Positions */}
-          <div className="rounded-2xl border border-white/[0.08] overflow-hidden" style={cardStyle}>
-            <div className="px-5 py-4 border-b border-white/[0.06]" style={headerStyle}>
-              <h2 className="text-white font-bold">Issue Positions</h2>
-            </div>
-            <div className="divide-y divide-white/[0.04]">
-              {allIssueCategories.map((cat) => {
-                const aIssue = pA.topIssues.find((i) => i.category === cat);
-                const bIssue = pB.topIssues.find((i) => i.category === cat);
-                return (
-                  <div key={cat} className="grid grid-cols-3 gap-4 p-5">
-                    <div>
-                      {aIssue ? (
-                        <>
-                          <div className="text-xs font-medium mb-0.5" style={{ color: '#d4ac52' }}>{aIssue.position}</div>
-                          <div className="text-white/40 text-xs">{aIssue.detail}</div>
-                        </>
-                      ) : (
-                        <div className="text-white/20 text-xs italic">No stated position</div>
-                      )}
-                    </div>
-                    <div className="text-center">
-                      <span className="text-xs text-white/40 px-2 py-1 rounded-full border border-white/[0.07]">{cat}</span>
-                    </div>
-                    <div className="text-right">
-                      {bIssue ? (
-                        <>
-                          <div className="text-xs font-medium mb-0.5" style={{ color: '#d4ac52' }}>{bIssue.position}</div>
-                          <div className="text-white/40 text-xs">{bIssue.detail}</div>
-                        </>
-                      ) : (
-                        <div className="text-white/20 text-xs italic">No stated position</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
 

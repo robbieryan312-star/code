@@ -17,6 +17,7 @@ import {
   Heart, Leaf, Landmark, BookOpen, Globe2, Shield, Clock,
 } from 'lucide-react';
 import { use } from 'react';
+import TrackButton from '@/components/ui/TrackButton';
 
 const tabs = [
   { id: 'overview',      label: 'Overview',       icon: Briefcase },
@@ -365,6 +366,7 @@ export default function PoliticianProfile({ params, searchParams }: { params: Pr
               {politician.inOffice && (
                 <span className="text-xs bg-green-400/15 text-green-400 border border-green-400/25 px-2.5 py-1 rounded-full font-medium tracking-wide">In Office</span>
               )}
+              <TrackButton politicianId={politician.id} />
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm mb-3">

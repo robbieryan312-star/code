@@ -100,20 +100,23 @@ export default function HomePage() {
       <section className="max-w-4xl mx-auto px-4 py-12 text-center">
         <div className="inline-flex items-center gap-2 bg-[#c8a951]/10 border border-[#c8a951]/30 rounded-full px-4 py-1.5 mb-5">
           <Shield className="h-4 w-4 text-[#c8a951]" />
-          <span className="text-[#c8a951] text-sm font-medium">100% Objective · No Editorial Bias · Verified Sources Only</span>
+          <span className="text-[#c8a951] text-sm font-medium">Official Records Only · Zero Editorial Bias · Every Claim Sourced</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
-          Know exactly who you&apos;re voting for
+          Stop voting on ads.<br className="hidden sm:block" /> Start voting on records.
         </h2>
-        <p className="text-gray-300 leading-relaxed mb-3 text-lg">
-          90% of elections are won by whoever spends the most money. In most local races,
-          voters know nothing about candidates except their party. A 20-second political ad tells you
-          your opponent&apos;s worst moments — it doesn&apos;t tell you who you&apos;re actually voting for.
+        <p className="text-gray-300 leading-relaxed mb-4 text-lg">
+          Your representative just voted on your healthcare, your taxes, and your civil liberties.
+          Most voters never see those votes — they see a 30-second attack ad. The average congressional
+          candidate raises <span className="text-white font-semibold">$1.7 million</span> for a seat
+          that pays $174,000 a year. The question isn&apos;t just who&apos;s running — it&apos;s
+          who&apos;s paying them to run, and whether their votes actually follow the money.
         </p>
         <p className="text-gray-400 leading-relaxed">
-          The Ledger changes that. Every piece of data here comes from official government records,
-          legally required disclosures, and non-partisan organizations.
-          No spin. No editorializing. Just the facts — from national Senate races down to your local school board.
+          The Ledger puts the full record in one place: voting histories, donor breakdowns, stock trades
+          made while serving on related committees, and a consistency score that compares campaign promises
+          to actual votes. Every claim links to an official source — FEC.gov, Congress.gov, STOCK Act
+          disclosures. No spin. No opinion. Just the record — searchable, cross-referenced, and verified.
         </p>
       </section>
 

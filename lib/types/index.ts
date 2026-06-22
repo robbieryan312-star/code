@@ -218,6 +218,7 @@ export interface Election {
   isPrimary: boolean;
   registrationDeadline?: string;
   earlyVotingStart?: string;
+  dataNote?: string;
 }
 
 export interface Candidate {

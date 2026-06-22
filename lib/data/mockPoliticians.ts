@@ -28,10 +28,11 @@ export const mockPoliticians: Politician[] = [
     nextElection: '2028',
     committees: ['Budget Committee (Chair)', 'Veterans Affairs', 'Energy & Natural Resources', 'Environment & Public Works'],
     topIssues: [
-      { name: 'Healthcare', position: 'Medicare for All', detail: 'Supports universal single-payer healthcare; introduced S.1129 Medicare for All Act', category: 'Healthcare', source: CONGRESS_GOV },
-      { name: 'Economic Inequality', position: 'Wealth Tax', detail: 'Advocates for annual tax on wealth over $32M; co-sponsored multiple wealth tax bills', category: 'Economy', source: CONGRESS_GOV },
-      { name: 'Climate Change', position: 'Green New Deal', detail: 'Supports aggressive renewable energy transition; cosponsored S.J.Res.8 Green New Deal resolution', category: 'Environment', source: CONGRESS_GOV },
-      { name: 'Education', position: 'Free College', detail: 'Advocates for tuition-free public colleges; introduced College for All Act repeatedly', category: 'Education', source: CONGRESS_GOV },
+      { name: 'Healthcare', position: 'Medicare for All', detail: 'Supports universal single-payer healthcare; introduced S.1129 Medicare for All Act in 2017, 2019, 2021, and 2023. Opposes private insurance industry control of healthcare.', category: 'Healthcare', source: CONGRESS_GOV },
+      { name: 'Economic Inequality', position: 'Wealth Tax & Worker Rights', detail: 'Advocates for annual tax on wealth over $32M; co-sponsored multiple wealth tax bills. Supports $17/hr minimum wage and expanded union organizing rights.', category: 'Economy', source: CONGRESS_GOV },
+      { name: 'Climate Change', position: 'Green New Deal', detail: 'Supports aggressive renewable energy transition; cosponsored S.J.Res.8 Green New Deal resolution. Calls for 100% clean energy by 2030 and a federal job guarantee for displaced workers.', category: 'Environment', source: CONGRESS_GOV },
+      { name: 'Education', position: 'Free Public College; Student Debt Cancellation', detail: 'Advocates for tuition-free public colleges via College for All Act. Supports canceling all federal student debt. Opposes for-profit colleges receiving federal aid.', category: 'Education', source: CONGRESS_GOV },
+      { name: 'Foreign Policy', position: 'Non-interventionist; end endless wars', detail: 'Voted NO on the 2002 Iraq War AUMF as a House member (one of 133 opposing). Authored S.J.Res.7 (Yemen War Powers Resolution, 2019) — passed Senate 54–46 and House 247–175, vetoed by President Trump. Opposes unconditional military aid; has criticized U.S. arms sales to Saudi Arabia. Supports diplomacy-first foreign policy and reducing overseas military commitments.', category: 'Foreign Policy', source: CONGRESS_GOV },
     ],
     votingRecord: [
       {

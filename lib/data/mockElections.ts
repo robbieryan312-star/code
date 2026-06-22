@@ -1,10 +1,57 @@
 import { Election } from '../types';
 
 export const mockElections: Election[] = [
+  // ── FLORIDA GOVERNOR 2026 ─────────────────────────────────────────────────
+  // Source: Ballotpedia.org — verify current candidates at ballotpedia.org/Florida_gubernatorial_election,_2026
+  {
+    id: 'fl-gov-2026',
+    title: 'Florida Governor 2026 — Open Seat (DeSantis Term-Limited)',
+    date: '2026-11-03',
+    state: 'Florida',
+    stateCode: 'FL',
+    level: 'state',
+    office: 'Governor',
+    chamber: 'governor',
+    isUpcoming: true,
+    isPrimary: false,
+    registrationDeadline: '2026-10-06',
+    earlyVotingStart: '2026-10-24',
+    dataNote: 'Candidate field is actively forming. Verify at Ballotpedia.org or dos.myflorida.com.',
+    candidates: [
+      {
+        id: 'c-donalds',
+        name: 'Byron Donalds',
+        party: 'Republican',
+        topIssues: [
+          { name: 'Economy', position: 'Lower taxes; business growth; fiscal conservatism', detail: 'Member of House Budget Committee; strong record opposing deficit spending and tax increases', category: 'Economy' },
+          { name: 'Border / Immigration', position: 'Strict enforcement; oppose sanctuary policies', detail: 'Consistent vote record on border security legislation; ally of Trump immigration agenda', category: 'Immigration' },
+          { name: 'Education', position: 'School choice; parental rights', detail: 'Supports Family Empowerment Scholarship expansion and continuation of DeSantis education agenda', category: 'Education' },
+        ],
+        fundsRaised: 8700000,
+        endorsements: ['Donald Trump', 'FL Republican Party'],
+      },
+      {
+        id: 'c-fishback',
+        name: 'James Fishback',
+        party: 'Democrat',
+        topIssues: [
+          { name: 'Economy', position: 'AI & workforce investment; economic opportunity', detail: 'Entrepreneur and advocate for AI-driven economic growth and job training programs', category: 'Economy' },
+          { name: 'Healthcare', position: 'Expand healthcare access; repeal 6-week ban', detail: 'Supports reproductive rights restoration and Medicaid expansion in Florida', category: 'Healthcare' },
+          { name: 'Education', position: 'Increase teacher pay; reverse book restrictions', detail: 'Opposes HB 1467 book review mandates; supports public school funding', category: 'Education' },
+        ],
+        fundsRaised: 3200000,
+        endorsements: ['FL Democratic Party'],
+      },
+    ],
+  },
+
+  // ── CALIFORNIA GOVERNOR 2026 ──────────────────────────────────────────────
+  // Newsom is constitutionally term-limited (two consecutive terms) — cannot seek third consecutive term.
+  // Source: Ballotpedia.org — verify at ballotpedia.org/California_gubernatorial_election,_2026
   {
     id: 'ca-gov-2026',
-    title: 'California Governor 2026',
-    date: '2026-11-03',
+    title: 'California Governor 2026 — Open Seat (Newsom Term-Limited)',
+    date: '2026-11-04',
     state: 'California',
     stateCode: 'CA',
     level: 'state',
@@ -14,28 +61,39 @@ export const mockElections: Election[] = [
     isPrimary: false,
     registrationDeadline: '2026-10-19',
     earlyVotingStart: '2026-10-05',
+    dataNote: 'This is an open-seat race. The candidate field is actively forming. Verify at Ballotpedia.org.',
     candidates: [
       {
-        id: 'c1', name: 'Gavin Newsom', party: 'Democrat',
+        id: 'ca-c1',
+        name: 'Eleni Kounalakis',
+        party: 'Democrat',
         topIssues: [
-          { name: 'Climate', position: 'Carbon Neutral by 2035', detail: 'Committed to accelerating clean energy transition', category: 'Environment' },
-          { name: 'Housing', position: 'Build 2.5M homes', detail: 'Streamline housing permits and reduce barriers', category: 'Housing' },
+          { name: 'Climate', position: 'Carbon neutrality; clean energy economy', detail: "Current Lt. Governor; strong climate record including support for CA's 100% clean energy grid mandate", category: 'Environment' },
+          { name: 'Housing', position: 'Streamline permitting; build more housing', detail: "Supports housing supply legislation to reduce California's housing shortage", category: 'Housing' },
+          { name: 'Economy', position: 'Tech and clean energy job growth', detail: 'Focus on keeping California competitive in technology and emerging industries', category: 'Economy' },
         ],
-        fundsRaised: 28000000, endorsements: ['CA Democratic Party', 'SEIU', 'Sierra Club'],
+        fundsRaised: 11400000,
+        endorsements: ['CA Democratic Party', 'CA Labor Federation'],
       },
       {
-        id: 'c2', name: 'Brian Dahle', party: 'Republican',
+        id: 'ca-c2',
+        name: 'Republican Candidate TBD',
+        party: 'Republican',
         topIssues: [
-          { name: 'Water', position: 'New Reservoirs', detail: 'Build Sites Reservoir and other water storage', category: 'Environment' },
-          { name: 'Economy', position: 'Lower Taxes', detail: 'Reduce state income and business taxes', category: 'Economy' },
+          { name: 'Economy', position: 'Reduce taxes and regulations', detail: 'Field actively forming — see Ballotpedia.org for current declared candidates', category: 'Economy' },
         ],
-        fundsRaised: 4200000, endorsements: ['CA Republican Party', 'CA Farm Bureau'],
+        fundsRaised: 0,
+        endorsements: [],
       },
     ],
   },
+
+  // ── TEXAS U.S. SENATE 2026 ────────────────────────────────────────────────
+  // Sen. John Cornyn (R) is up for re-election in 2026. Ted Cruz won re-election in 2024.
+  // Source: Ballotpedia.org — verify at ballotpedia.org/United_States_Senate_election_in_Texas,_2026
   {
     id: 'tx-sen-2026',
-    title: 'Texas U.S. Senate 2026',
+    title: 'Texas U.S. Senate 2026 — Cornyn Re-Election',
     date: '2026-11-03',
     state: 'Texas',
     stateCode: 'TX',
@@ -45,26 +103,35 @@ export const mockElections: Election[] = [
     isUpcoming: true,
     isPrimary: false,
     registrationDeadline: '2026-10-05',
+    dataNote: 'Democratic challenger field not yet declared. Verify at Ballotpedia.org.',
     candidates: [
       {
-        id: 'c3', name: 'Ted Cruz', party: 'Republican',
+        id: 'tx-c1',
+        name: 'John Cornyn',
+        party: 'Republican',
         topIssues: [
-          { name: 'Border Security', position: 'Complete the Wall', detail: 'Finish border wall and increase enforcement', category: 'Immigration' },
-          { name: 'Energy', position: 'Fossil Fuel Support', detail: 'Protect Texas oil and gas industry', category: 'Economy' },
+          { name: 'National Security', position: 'Strong defense; intelligence funding', detail: 'Member of Senate Intelligence and Finance committees; known for bipartisan work on gun background check reform (Bipartisan Safer Communities Act, 2022)', category: 'National Security' },
+          { name: 'Energy', position: 'Fossil fuel protection; LNG exports', detail: 'Strong supporter of Texas oil, gas, and LNG industry; opposes EPA restrictions on energy production', category: 'Economy' },
+          { name: 'Border Security', position: 'Physical barrier; enhanced enforcement', detail: "One of Senate's longest-serving immigration hardliners; supports border wall and increased deportation funding", category: 'Immigration' },
         ],
-        fundsRaised: 31000000, endorsements: ['TX Republican Party', 'NRA', 'TX Oil & Gas Association'],
-        incumbentId: 'ted-cruz',
+        fundsRaised: 18900000,
+        endorsements: ['TX Republican Party', 'NRA', 'TX Oil & Gas Association'],
+        incumbentId: 'john-cornyn',
       },
       {
-        id: 'c4', name: 'Colin Allred', party: 'Democrat',
+        id: 'tx-c2',
+        name: 'Democratic Challenger TBD',
+        party: 'Democrat',
         topIssues: [
-          { name: 'Healthcare', position: 'Protect ACA', detail: 'Expand Medicaid and protect preexisting conditions coverage', category: 'Healthcare' },
-          { name: 'Education', position: 'Public School Investment', detail: 'Increase federal education funding', category: 'Education' },
+          { name: 'Healthcare', position: 'Expand Medicaid; protect ACA', detail: 'Field forming — see Ballotpedia.org for current declared candidates', category: 'Healthcare' },
         ],
-        fundsRaised: 22000000, endorsements: ['TX Democratic Party', 'AFT', 'Planned Parenthood'],
+        fundsRaised: 0,
+        endorsements: [],
       },
     ],
   },
+
+  // ── NEW YORK 14TH CONGRESSIONAL 2024 (completed) ─────────────────────────
   {
     id: 'ny-14-2024',
     title: 'New York 14th Congressional District 2024',
@@ -97,6 +164,8 @@ export const mockElections: Election[] = [
       },
     ],
   },
+
+  // ── CHICAGO MAYOR 2027 ────────────────────────────────────────────────────
   {
     id: 'chicago-mayor-2027',
     title: 'Chicago Mayor 2027',
@@ -109,6 +178,7 @@ export const mockElections: Election[] = [
     isUpcoming: true,
     isPrimary: true,
     registrationDeadline: '2027-02-09',
+    dataNote: 'Field actively forming — verify at Ballotpedia.org.',
     candidates: [
       {
         id: 'c7', name: 'Brandon Johnson', party: 'Democrat',
@@ -121,49 +191,8 @@ export const mockElections: Election[] = [
       },
     ],
   },
-  {
-    id: 'fl-gov-2026',
-    title: 'Florida Governor 2026 — Open Seat (DeSantis Term-Limited)',
-    date: '2026-11-03',
-    state: 'Florida',
-    stateCode: 'FL',
-    level: 'state',
-    office: 'Governor',
-    chamber: 'governor',
-    isUpcoming: true,
-    isPrimary: false,
-    registrationDeadline: '2026-10-06',
-    earlyVotingStart: '2026-10-24',
-    candidates: [
-      {
-        id: 'c8',
-        name: 'Jeanette Nuñez',
-        party: 'Republican',
-        topIssues: [
-          { name: 'Education', position: 'Expand school choice; continue DeSantis education agenda', detail: 'Supporter of Family Empowerment Scholarship and parental rights legislation enacted under DeSantis', category: 'Education' },
-          { name: 'Economy', position: 'No new taxes; business-friendly regulation', detail: 'Supports low-regulation economic environment and opposes income tax', category: 'Economy' },
-          { name: 'Immigration', position: 'Continue SB 1718 enforcement; oppose sanctuary policies', detail: 'Strong border enforcement ally; co-authored immigration bills in Florida Legislature', category: 'Immigration' },
-        ],
-        fundsRaised: 9200000,
-        endorsements: ['FL Republican Party', 'FL Chamber of Commerce', 'FL Police Chiefs Association'],
-      },
-      {
-        id: 'c9',
-        name: 'Nikki Fried',
-        party: 'Democrat',
-        topIssues: [
-          { name: 'Abortion Rights', position: 'Repeal 6-week ban; restore reproductive rights', detail: 'Has made abortion the centerpiece of her campaign; ran statewide referendum campaign in 2024', category: 'Healthcare' },
-          { name: 'Environment', position: 'Everglades restoration; ban offshore drilling', detail: 'Former FL Agriculture Commissioner; strong environmental record including hemp legalization', category: 'Environment' },
-          { name: 'Healthcare', position: 'Expand Medicaid; oppose hospital monopolies', detail: 'FL is one of 10 states that has not accepted ACA Medicaid expansion — Fried supports it', category: 'Healthcare' },
-          { name: 'Education', position: 'Increase teacher pay; oppose book bans', detail: 'Supports reversing HB 1467 book review mandate and restoring educator autonomy', category: 'Education' },
-        ],
-        fundsRaised: 14800000,
-        endorsements: ['FL Democratic Party', 'FL Education Association', 'Planned Parenthood of FL', 'FL AFL-CIO'],
-      },
-    ],
-  },
 
-  // KY-4 2024 Republican Primary — Massie vs AIPAC-backed challenger
+  // ── KY-4 2024 PRIMARY — Massie vs AIPAC-backed challenger (completed) ─────
   {
     id: 'ky-4-primary-2024',
     title: "Kentucky 4th Congressional District — 2024 Republican Primary",

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Menu, X, Scale, ChevronDown } from 'lucide-react';
+import { Menu, X, Scale, ChevronDown, BookmarkCheck } from 'lucide-react';
 
 const navItems = [
   { label: 'Map', href: '/' },
@@ -101,6 +101,19 @@ export default function Navigation() {
             ))}
           </div>
 
+          {/* My Ledger CTA */}
+          <Link
+            href="/dashboard"
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              pathname === '/dashboard'
+                ? 'bg-[#c8a951]/20 text-[#c8a951] border-[#c8a951]/40'
+                : 'text-[#c8a951] border-[#c8a951]/30 hover:bg-[#c8a951]/10 hover:border-[#c8a951]/50'
+            }`}
+          >
+            <BookmarkCheck className="h-3.5 w-3.5" />
+            My Ledger
+          </Link>
+
           {/* Right badge */}
           <div className="hidden md:flex items-center gap-2">
             <div className="text-right">
@@ -124,6 +137,18 @@ export default function Navigation() {
       {mobileOpen && (
         <div className="md:hidden border-t border-white/[0.07] px-4 py-3 space-y-0.5"
              style={{ background: 'rgba(11,25,41,0.97)', backdropFilter: 'blur(20px)' }}>
+          <Link
+            href="/dashboard"
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border mb-1 ${
+              pathname === '/dashboard'
+                ? 'bg-[#c8a951]/20 text-[#c8a951] border-[#c8a951]/40'
+                : 'text-[#c8a951] border-[#c8a951]/20 hover:bg-[#c8a951]/10'
+            }`}
+            onClick={() => setMobileOpen(false)}
+          >
+            <BookmarkCheck className="h-4 w-4" />
+            My Ledger
+          </Link>
           {navItems.map((item) => (
             <div key={item.href}>
               <Link
