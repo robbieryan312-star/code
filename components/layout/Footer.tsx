@@ -12,23 +12,24 @@ const dataSources = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0a1628] border-t border-[#1e3a5f] mt-16">
+    <footer className="mt-20 border-t border-white/[0.06]" style={{ background: 'rgba(5,9,15,0.9)' }}>
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-[#c8a951] rounded-full p-1.5">
-                <Scale className="h-4 w-4 text-[#0a1628]" />
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                   style={{ background: 'linear-gradient(135deg, #d4ac52 0%, #b8922f 100%)' }}>
+                <Scale className="h-4 w-4 text-[#05090f]" />
               </div>
-              <span className="text-white font-bold text-lg">The Ledger</span>
+              <span className="text-white font-bold text-base tracking-tight">The Ledger</span>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Providing objective, fact-based information about politicians at every level of government.
+            <p className="text-white/40 text-sm leading-relaxed">
+              Objective, fact-based information about politicians at every level of government.
               All data sourced from official government records and non-partisan organizations.
             </p>
-            <div className="mt-4 p-3 bg-[#0d1f35] rounded-lg border border-[#1e3a5f]">
-              <p className="text-xs text-[#c8a951] font-medium mb-1">Non-Partisan Commitment</p>
-              <p className="text-xs text-gray-400">
+            <div className="mt-5 p-4 rounded-xl border border-white/[0.06]" style={{ background: 'rgba(212,172,82,0.05)' }}>
+              <p className="text-xs text-[#d4ac52]/80 font-semibold mb-1 tracking-wide uppercase">Non-Partisan Commitment</p>
+              <p className="text-xs text-white/35">
                 The Ledger presents verified facts only. No opinion, no editorial bias.
                 All politicians are evaluated using the same objective criteria.
               </p>
@@ -36,21 +37,21 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4">Data Sources</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white/80 font-semibold mb-4 text-sm tracking-wide uppercase">Data Sources</h3>
+            <ul className="space-y-3">
               {dataSources.map((source) => (
-                <li key={source.name} className="flex items-start gap-2">
-                  <ExternalLink className="h-3 w-3 text-[#c8a951] mt-1 flex-shrink-0" />
+                <li key={source.name} className="flex items-start gap-2.5">
+                  <ExternalLink className="h-3 w-3 text-[#d4ac52]/60 mt-0.5 flex-shrink-0" />
                   <div>
                     <a
                       href={source.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-gray-300 hover:text-[#c8a951] transition-colors font-medium"
+                      className="text-xs text-white/60 hover:text-[#d4ac52] transition-colors font-medium"
                     >
                       {source.name}
                     </a>
-                    <p className="text-xs text-gray-500">{source.description}</p>
+                    <p className="text-xs text-white/25 mt-0.5">{source.description}</p>
                   </div>
                 </li>
               ))}
@@ -58,8 +59,8 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-4">Navigate</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="text-white/80 font-semibold mb-4 text-sm tracking-wide uppercase">Navigate</h3>
+            <ul className="space-y-2.5 text-sm">
               {[
                 ['Map', '/'],
                 ['Browse Politicians', '/politicians'],
@@ -69,7 +70,7 @@ export default function Footer() {
                 ['Stock Trades', '/congress'],
               ].map(([label, href]) => (
                 <li key={href}>
-                  <Link href={href} className="text-gray-400 hover:text-[#c8a951] transition-colors">
+                  <Link href={href} className="text-white/40 hover:text-[#d4ac52] transition-colors text-sm">
                     {label}
                   </Link>
                 </li>
@@ -78,11 +79,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-[#1e3a5f] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 text-xs">
+        <div className="border-t border-white/[0.05] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-white/25 text-xs">
             © 2026 The Ledger. All data sourced from public government records. For informational purposes only.
           </p>
-          <p className="text-gray-500 text-xs">
+          <p className="text-white/25 text-xs">
             Not affiliated with any political party, candidate, or government agency.
           </p>
         </div>

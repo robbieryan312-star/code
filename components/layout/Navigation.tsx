@@ -46,22 +46,25 @@ export default function Navigation() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   return (
-    <nav className="bg-[#0a1628] border-b border-[#1e3a5f] sticky top-0 z-50 shadow-lg">
+    <nav className="sticky top-0 z-50 border-b border-white/[0.07]"
+         style={{ background: 'rgba(5,9,15,0.82)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="bg-[#c8a951] rounded-full p-1.5">
-              <Scale className="h-5 w-5 text-[#0a1628]" />
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style={{ background: 'linear-gradient(135deg, #d4ac52 0%, #b8922f 100%)', boxShadow: '0 2px 8px rgba(212,172,82,0.3)' }}>
+              <Scale className="h-4 w-4 text-[#05090f]" />
             </div>
             <div>
-              <span className="text-white font-bold text-lg tracking-tight">The Ledger</span>
-              <span className="text-[#c8a951] text-xs block leading-none">Political Transparency</span>
+              <span className="text-white font-bold text-base tracking-tight leading-none">The Ledger</span>
+              <span className="text-[#d4ac52]/70 text-[10px] block leading-none mt-0.5 tracking-wider uppercase">Political Transparency</span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-0.5">
             {navItems.map((item) => (
               <div
                 key={item.href}
@@ -71,22 +74,23 @@ export default function Navigation() {
               >
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
-                      ? 'bg-[#1e3a5f] text-[#c8a951]'
-                      : 'text-gray-300 hover:text-white hover:bg-[#1e3a5f]'
+                      ? 'bg-white/[0.08] text-[#d4ac52]'
+                      : 'text-white/60 hover:text-white hover:bg-white/[0.06]'
                   }`}
                 >
                   {item.label}
-                  {item.sub && <ChevronDown className="h-3 w-3" />}
+                  {item.sub && <ChevronDown className="h-3 w-3 opacity-60" />}
                 </Link>
                 {item.sub && openDropdown === item.label && (
-                  <div className="absolute top-full left-0 w-52 bg-[#0d1f35] border border-[#1e3a5f] rounded-md shadow-xl py-1 mt-0.5">
+                  <div className="absolute top-full left-0 w-52 rounded-xl shadow-2xl py-1 mt-2 border border-white/[0.08]"
+                       style={{ background: 'rgba(11,25,41,0.95)', backdropFilter: 'blur(20px)' }}>
                     {item.sub.map((sub) => (
                       <Link
                         key={sub.href}
                         href={sub.href}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#1e3a5f] hover:text-white"
+                        className="block px-4 py-2 text-sm text-white/60 hover:bg-white/[0.06] hover:text-white transition-colors"
                       >
                         {sub.label}
                       </Link>
@@ -97,33 +101,34 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Right side */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="text-xs text-gray-400 text-right">
-              <div className="text-[#c8a951] font-medium">Data Sources</div>
-              <div>FEC · ProPublica · OpenSecrets</div>
+          {/* Right badge */}
+          <div className="hidden md:flex items-center gap-2">
+            <div className="text-right">
+              <div className="text-[10px] font-semibold tracking-wider uppercase text-[#d4ac52]/80">Data Sources</div>
+              <div className="text-[10px] text-white/35">FEC · ProPublica · OpenSecrets</div>
             </div>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile button */}
           <button
-            className="md:hidden text-gray-300 hover:text-white p-2"
+            className="md:hidden text-white/60 hover:text-white p-2 rounded-lg hover:bg-white/[0.06] transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#0d1f35] border-t border-[#1e3a5f] px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-white/[0.07] px-4 py-3 space-y-0.5"
+             style={{ background: 'rgba(11,25,41,0.97)', backdropFilter: 'blur(20px)' }}>
           {navItems.map((item) => (
             <div key={item.href}>
               <Link
                 href={item.href}
-                className={`block px-3 py-2 rounded-md text-sm font-medium ${
-                  pathname === item.href ? 'bg-[#1e3a5f] text-[#c8a951]' : 'text-gray-300 hover:text-white'
+                className={`block px-3 py-2 rounded-lg text-sm font-medium ${
+                  pathname === item.href ? 'bg-white/[0.08] text-[#d4ac52]' : 'text-white/60 hover:text-white'
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
@@ -133,7 +138,7 @@ export default function Navigation() {
                 <Link
                   key={sub.href}
                   href={sub.href}
-                  className="block pl-6 py-1.5 text-xs text-gray-400 hover:text-gray-200"
+                  className="block pl-6 py-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >
                   {sub.label}

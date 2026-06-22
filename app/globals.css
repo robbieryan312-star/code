@@ -1,30 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #06101e;
-  --foreground: #e5e7eb;
+  --bg-base:        #05090f;
+  --bg-card:        #0b1929;
+  --bg-elevated:    #0f2236;
+  --border-subtle:  rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.1);
+  --border-hover:   rgba(255,255,255,0.18);
+  --gold:           #d4ac52;
+  --gold-dim:       #b8922f;
+  --foreground:     #e8eaf0;
+  --muted:          #8899aa;
 }
 
 body {
-  background: var(--background);
+  background: var(--bg-base);
   color: var(--foreground);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(30,62,100,0.35) 0%, transparent 70%);
+  background-attachment: fixed;
 }
 
 * {
   box-sizing: border-box;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Glass card utility ─────────────────────────────────── */
+.glass {
+  background: rgba(11,25,41,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
 }
-::-webkit-scrollbar-track {
-  background: #0a1628;
+
+.glass-hover:hover {
+  background: rgba(15,34,54,0.8);
+  border-color: var(--border-default);
 }
-::-webkit-scrollbar-thumb {
-  background: #1e3a5f;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #c8a951;
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+/* ── Ambient glow on interactive elements ───────────────── */
+.glow-gold {
+  box-shadow: 0 0 0 1px var(--gold), 0 0 20px rgba(212,172,82,0.15);
 }

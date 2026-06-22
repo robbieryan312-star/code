@@ -65,9 +65,9 @@ function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[
   const [openTopic, setOpenTopic] = useState<string | null>(null);
 
   return (
-    <div className="bg-[#0d1f35] rounded-xl border border-[#1e3a5f] p-5 mb-6">
+    <div className="rounded-xl border border-white/[0.08] p-5 mb-6" style={{ background: 'rgba(11,25,41,0.7)' }}>
       <h2 className="text-white font-bold mb-1">Where They Stand — Key Issues</h2>
-      <p className="text-gray-500 text-xs mb-4">Click any topic to see their position, actions taken, and source</p>
+      <p className="text-white/35 text-xs mb-4">Click any topic to see their position, actions taken, and source</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         {HOT_TOPICS.map(topic => {
           const matched = matchTopic(issues, topic);
@@ -81,10 +81,11 @@ function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[
                 className={`w-full text-left rounded-xl p-3 border transition-all ${
                   matched
                     ? isOpen
-                      ? 'border-[#c8a951] bg-[#c8a951]/10'
-                      : 'border-[#1e3a5f] hover:border-[#c8a951]/60 bg-[#0a1628] hover:bg-[#0a1628]'
-                    : 'border-[#1e3a5f]/40 bg-[#0a1628]/40 opacity-60'
+                      ? 'border-[#d4ac52]/50'
+                      : 'border-white/[0.07] hover:border-[#d4ac52]/40'
+                    : 'border-white/[0.04] opacity-50'
                 }`}
+                style={matched && isOpen ? { background: 'rgba(212,172,82,0.08)' } : { background: 'rgba(5,9,15,0.5)' }}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <Icon className={`h-4 w-4 flex-shrink-0 ${matched ? 'text-[#c8a951]' : 'text-gray-600'}`} />
@@ -96,7 +97,7 @@ function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[
               </button>
 
               {isOpen && matched && (
-                <div className="mt-1 rounded-xl border border-[#c8a951]/30 bg-[#06101e] p-3 text-xs space-y-2">
+                <div className="mt-1 rounded-xl border border-[#d4ac52]/25 p-3 text-xs space-y-2" style={{ background: 'rgba(5,9,15,0.85)' }}>
                   <p className="text-gray-300 leading-relaxed">{matched.detail}</p>
                   {matched.source && (
                     <div className="flex items-center gap-2 pt-1 border-t border-[#1e3a5f]">
@@ -155,25 +156,26 @@ function IssueAccordion({ issues }: { issues: Issue[] }) {
   return (
     <div className="space-y-2">
       {issues.map((issue, i) => (
-        <div key={issue.name} className={`border rounded-xl overflow-hidden transition-colors ${openIdx === i ? 'border-[#c8a951]/40' : 'border-[#1e3a5f]'}`}>
+        <div key={issue.name} className={`border rounded-xl overflow-hidden transition-all ${openIdx === i ? 'border-[#d4ac52]/40' : 'border-white/[0.07]'}`}
+             style={{ background: openIdx === i ? 'rgba(212,172,82,0.04)' : 'rgba(5,9,15,0.4)' }}>
           <button
             onClick={() => setOpenIdx(openIdx === i ? null : i)}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1e3a5f]/30 transition-colors text-left"
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors text-left"
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-white font-medium text-sm">{issue.name}</span>
-                <span className="text-xs bg-[#1e3a5f] text-gray-400 px-2 py-0 rounded-full">{issue.category}</span>
+                <span className="text-xs text-white/35 px-2 py-0 rounded-full border border-white/[0.07]">{issue.category}</span>
               </div>
-              <div className="text-[#c8a951] text-xs mt-0.5">{issue.position}</div>
+              <div className="text-xs mt-0.5" style={{ color: '#d4ac52' }}>{issue.position}</div>
             </div>
             {openIdx === i
-              ? <ChevronDown className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />
-              : <ChevronRight className="h-3.5 w-3.5 text-gray-500 flex-shrink-0" />}
+              ? <ChevronDown className="h-3.5 w-3.5 text-white/30 flex-shrink-0" />
+              : <ChevronRight className="h-3.5 w-3.5 text-white/30 flex-shrink-0" />}
           </button>
           {openIdx === i && (
-            <div className="px-4 pb-3 border-t border-[#1e3a5f] bg-[#06101e]/50 space-y-2">
-              <p className="text-gray-300 text-xs leading-relaxed pt-2">{issue.detail}</p>
+            <div className="px-4 pb-3 border-t border-white/[0.06] space-y-2" style={{ background: 'rgba(5,9,15,0.4)' }}>
+              <p className="text-white/60 text-xs leading-relaxed pt-2">{issue.detail}</p>
               {issue.source && (
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${
@@ -183,11 +185,11 @@ function IssueAccordion({ issues }: { issues: Issue[] }) {
                   }`}>{issue.source.tier}</span>
                   {issue.source.url ? (
                     <a href={issue.source.url} target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-1 text-xs text-[#c8a951] hover:text-white transition-colors">
+                       className="flex items-center gap-1 text-xs hover:text-white transition-colors" style={{ color: '#d4ac52' }}>
                       {issue.source.name} <ExternalLink className="h-3 w-3" />
                     </a>
                   ) : (
-                    <span className="text-xs text-gray-500">Source: {issue.source.name}</span>
+                    <span className="text-xs text-white/30">Source: {issue.source.name}</span>
                   )}
                 </div>
               )}
@@ -203,10 +205,10 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
   const e = politician.endorsements;
   if (!e || (e.endorses.length === 0 && e.endorsedBy.length === 0)) {
     return (
-      <div className="bg-[#0d1f35] rounded-xl p-8 border border-[#1e3a5f] text-center">
-        <Users className="h-10 w-10 text-gray-600 mx-auto mb-3" />
-        <p className="text-gray-400 text-sm">No endorsement data on record for {politician.name}</p>
-        <p className="text-gray-600 text-xs mt-1">Endorsement records will be added as elections approach</p>
+      <div className="rounded-xl p-8 border border-white/[0.07] text-center" style={{ background: 'rgba(11,25,41,0.6)' }}>
+        <Users className="h-10 w-10 text-white/20 mx-auto mb-3" />
+        <p className="text-white/40 text-sm">No endorsement data on record for {politician.name}</p>
+        <p className="text-white/20 text-xs mt-1">Endorsement records will be added as elections approach</p>
       </div>
     );
   }
@@ -214,7 +216,7 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Endorsed By */}
-      <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+      <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
         <h2 className="text-white font-bold mb-1 flex items-center gap-2">
           <Users className="h-4 w-4 text-[#c8a951]" /> Endorsed By
         </h2>
@@ -224,21 +226,21 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
         ) : (
           <div className="space-y-3">
             {e.endorsedBy.map((endorser, i) => (
-              <div key={i} className="border border-[#1e3a5f] rounded-xl p-3 bg-[#0a1628]">
+              <div key={i} className="border border-white/[0.07] rounded-xl p-3" style={{ background: 'rgba(5,9,15,0.5)' }}>
                 <div className="flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center flex-shrink-0">
-                    <span className="text-[#c8a951] text-xs font-bold">{endorser.name.split(' ').map(n => n[0]).slice(0,2).join('')}</span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-white/[0.08]" style={{ background: 'rgba(212,172,82,0.12)' }}>
+                    <span className="text-xs font-bold" style={{ color: '#d4ac52' }}>{endorser.name.split(' ').map((n: string) => n[0]).slice(0,2).join('')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     {endorser.politicianId ? (
-                      <Link href={`/politicians/${endorser.politicianId}`} className="text-white font-medium text-sm hover:text-[#c8a951] transition-colors">
+                      <Link href={`/politicians/${endorser.politicianId}`} className="text-white font-medium text-sm hover:text-[#d4ac52] transition-colors">
                         {endorser.name}
                       </Link>
                     ) : (
                       <span className="text-white font-medium text-sm">{endorser.name}</span>
                     )}
-                    <div className="text-gray-400 text-xs">{endorser.office}</div>
-                    {endorser.date && <div className="text-gray-600 text-xs">{endorser.date.split('-')[0]}</div>}
+                    <div className="text-white/40 text-xs">{endorser.office}</div>
+                    {endorser.date && <div className="text-white/25 text-xs">{endorser.date.split('-')[0]}</div>}
                     {endorser.source && (
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className={`text-xs px-1.5 py-0 rounded font-medium ${
@@ -248,14 +250,11 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
                         }`}>{endorser.source.tier}</span>
                         {endorser.source.url ? (
                           <a href={endorser.source.url} target="_blank" rel="noopener noreferrer"
-                             className="text-xs text-gray-500 hover:text-[#c8a951] transition-colors flex items-center gap-1">
+                             className="text-xs text-white/30 hover:text-[#d4ac52] transition-colors flex items-center gap-1">
                             {endorser.source.name} <ExternalLink className="h-2.5 w-2.5" />
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-600">{endorser.source.name}</span>
-                        )}
-                        {endorser.source.description && (
-                          <span className="text-xs text-gray-600">— {endorser.source.description}</span>
+                          <span className="text-xs text-white/25">{endorser.source.name}</span>
                         )}
                       </div>
                     )}
@@ -268,7 +267,7 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
       </div>
 
       {/* Endorses */}
-      <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+      <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
         <h2 className="text-white font-bold mb-1 flex items-center gap-2">
           <Users className="h-4 w-4 text-blue-400" /> Who {politician.firstName} Endorses
         </h2>
@@ -278,21 +277,21 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
         ) : (
           <div className="space-y-3">
             {e.endorses.map((endorsed, i) => (
-              <div key={i} className="border border-[#1e3a5f] rounded-xl p-3 bg-[#0a1628]">
+              <div key={i} className="border border-white/[0.07] rounded-xl p-3" style={{ background: 'rgba(5,9,15,0.5)' }}>
                 <div className="flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-400 text-xs font-bold">{endorsed.name.split(' ').map(n => n[0]).slice(0,2).join('')}</span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-white/[0.08]" style={{ background: 'rgba(96,165,250,0.12)' }}>
+                    <span className="text-blue-400 text-xs font-bold">{endorsed.name.split(' ').map((n: string) => n[0]).slice(0,2).join('')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     {endorsed.politicianId ? (
-                      <Link href={`/politicians/${endorsed.politicianId}`} className="text-white font-medium text-sm hover:text-[#c8a951] transition-colors">
+                      <Link href={`/politicians/${endorsed.politicianId}`} className="text-white font-medium text-sm hover:text-[#d4ac52] transition-colors">
                         {endorsed.name}
                       </Link>
                     ) : (
                       <span className="text-white font-medium text-sm">{endorsed.name}</span>
                     )}
-                    <div className="text-gray-400 text-xs">{endorsed.office}</div>
-                    {endorsed.date && <div className="text-gray-600 text-xs">{endorsed.date.split('-')[0]}</div>}
+                    <div className="text-white/40 text-xs">{endorsed.office}</div>
+                    {endorsed.date && <div className="text-white/25 text-xs">{endorsed.date.split('-')[0]}</div>}
                     {endorsed.source && (
                       <div className="flex items-center gap-1.5 mt-1">
                         <span className={`text-xs px-1.5 py-0 rounded font-medium ${
@@ -302,14 +301,11 @@ function EndorsementsTab({ politician }: { politician: Politician }) {
                         }`}>{endorsed.source.tier}</span>
                         {endorsed.source.url ? (
                           <a href={endorsed.source.url} target="_blank" rel="noopener noreferrer"
-                             className="text-xs text-gray-500 hover:text-[#c8a951] transition-colors flex items-center gap-1">
+                             className="text-xs text-white/30 hover:text-[#d4ac52] transition-colors flex items-center gap-1">
                             {endorsed.source.name} <ExternalLink className="h-2.5 w-2.5" />
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-600">{endorsed.source.name}</span>
-                        )}
-                        {endorsed.source.description && (
-                          <span className="text-xs text-gray-600">— {endorsed.source.description}</span>
+                          <span className="text-xs text-white/25">{endorsed.source.name}</span>
                         )}
                       </div>
                     )}
@@ -345,23 +341,27 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
       </Link>
 
       {/* Header Card */}
-      <div className="bg-gradient-to-r from-[#0d1f35] to-[#0a1628] rounded-2xl border border-[#1e3a5f] p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-5">
+      <div className="rounded-2xl border border-white/[0.08] p-6 mb-6 relative overflow-hidden"
+           style={{ background: 'linear-gradient(135deg, rgba(15,34,54,0.9) 0%, rgba(11,25,41,0.9) 100%)', backdropFilter: 'blur(12px)' }}>
+        <div className="absolute inset-0 pointer-events-none"
+             style={{ background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(30,62,100,0.25) 0%, transparent 70%)' }} />
+        <div className="relative flex flex-col md:flex-row gap-5">
           {/* Photo */}
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-[#1e3a5f] flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-white/[0.1]"
+               style={{ background: 'linear-gradient(135deg, #0f2236 0%, #07101f 100%)' }}>
             {politician.imageUrl ? (
               <img src={politician.imageUrl} alt={politician.name} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[#c8a951] font-bold text-4xl">{politician.firstName[0]}{politician.lastName[0]}</span>
+              <span className="font-bold text-4xl" style={{ color: '#d4ac52' }}>{politician.firstName[0]}{politician.lastName[0]}</span>
             )}
           </div>
 
           {/* Info */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-start flex-wrap gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-bold text-white">{politician.name}</h1>
               {politician.inOffice && (
-                <span className="text-xs bg-green-400/20 text-green-400 border border-green-400/30 px-2 py-1 rounded-full">In Office</span>
+                <span className="text-xs bg-green-400/15 text-green-400 border border-green-400/25 px-2.5 py-1 rounded-full font-medium tracking-wide">In Office</span>
               )}
             </div>
 
@@ -422,21 +422,21 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Key Stats */}
-          <div className="flex md:flex-col gap-3 flex-wrap md:flex-nowrap">
-            <div className="bg-[#0a1628] rounded-xl p-3 border border-[#1e3a5f] text-center min-w-[90px]">
+          <div className="flex md:flex-col gap-2 flex-wrap md:flex-nowrap">
+            <div className="rounded-xl p-3 border border-white/[0.07] text-center min-w-[90px]" style={{ background: 'rgba(5,9,15,0.5)' }}>
               <div className={`text-2xl font-bold ${politician.consistency.overallScore >= 75 ? 'text-green-400' : politician.consistency.overallScore >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
                 {politician.consistency.overallScore}
               </div>
-              <div className="text-xs text-gray-400">Consistency</div>
+              <div className="text-xs text-white/40">Consistency</div>
             </div>
-            <div className="bg-[#0a1628] rounded-xl p-3 border border-[#1e3a5f] text-center min-w-[90px]">
-              <div className="text-2xl font-bold text-[#c8a951]">{formatMoney(politician.campaignFinance.totalRaised)}</div>
-              <div className="text-xs text-gray-400">Total Raised</div>
+            <div className="rounded-xl p-3 border border-white/[0.07] text-center min-w-[90px]" style={{ background: 'rgba(5,9,15,0.5)' }}>
+              <div className="text-2xl font-bold" style={{ color: '#d4ac52' }}>{formatMoney(politician.campaignFinance.totalRaised)}</div>
+              <div className="text-xs text-white/40">Total Raised</div>
             </div>
             {lobbyistTotal > 0 && (
-              <div className="bg-[#0a1628] rounded-xl p-3 border border-yellow-400/30 text-center min-w-[90px]">
+              <div className="rounded-xl p-3 border border-yellow-400/20 text-center min-w-[90px]" style={{ background: 'rgba(5,9,15,0.5)' }}>
                 <div className="text-2xl font-bold text-yellow-400">{formatMoney(lobbyistTotal)}</div>
-                <div className="text-xs text-gray-400">Lobbyist $</div>
+                <div className="text-xs text-white/40">Lobbyist $</div>
               </div>
             )}
           </div>
@@ -444,11 +444,11 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
 
         {/* Committees */}
         {politician.committees && politician.committees.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-[#1e3a5f]">
-            <span className="text-xs text-gray-400 mr-3">Committees:</span>
-            <div className="inline-flex flex-wrap gap-2">
+          <div className="mt-4 pt-4 border-t border-white/[0.06] relative">
+            <span className="text-xs text-white/35 mr-3">Committees:</span>
+            <div className="inline-flex flex-wrap gap-1.5">
               {politician.committees.map((c) => (
-                <span key={c} className="text-xs bg-[#1e3a5f] text-gray-300 px-2 py-0.5 rounded-full">{c}</span>
+                <span key={c} className="text-xs text-white/50 px-2.5 py-0.5 rounded-full border border-white/[0.08]" style={{ background: 'rgba(255,255,255,0.04)' }}>{c}</span>
               ))}
             </div>
           </div>
@@ -456,18 +456,18 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-2 mb-6 scrollbar-none">
+      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-6" style={{ scrollbarWidth: 'none' }}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                activeTab === tab.id
-                  ? 'bg-[#c8a951] text-[#0a1628]'
-                  : 'bg-[#0d1f35] text-gray-400 hover:text-white border border-[#1e3a5f] hover:border-[#c8a951]'
-              }`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0"
+              style={activeTab === tab.id
+                ? { background: 'linear-gradient(135deg, #d4ac52 0%, #b8922f 100%)', color: '#05090f', boxShadow: '0 2px 12px rgba(212,172,82,0.3)' }
+                : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.07)' }
+              }
             >
               <Icon className="h-4 w-4" />
               {tab.label}
@@ -483,7 +483,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
           <HotTopicsPanel issues={politician.topIssues} votes={politician.votingRecord} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Top Issues */}
-            <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+            <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
               <h2 className="text-white font-bold mb-1">Key Positions</h2>
               <p className="text-gray-500 text-xs mb-4">Click each issue to see detail and sources</p>
               <IssueAccordion issues={politician.topIssues} />
@@ -491,7 +491,7 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
 
             {/* Quick Stats */}
             <div className="space-y-4">
-              <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+              <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
                 <h2 className="text-white font-bold mb-4">At a Glance</h2>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
@@ -537,12 +537,12 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
                 </div>
               </div>
 
-              <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+              <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
                 <h2 className="text-white font-bold mb-3">Compare with Others</h2>
                 <p className="text-gray-400 text-sm mb-3">See how this politician compares side-by-side</p>
                 <Link
                   href={`/compare?a=${politician.id}`}
-                  className="w-full flex items-center justify-center gap-2 bg-[#1e3a5f] hover:bg-[#2d5a8e] text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-2 text-white py-2.5 rounded-xl text-sm font-medium transition-all hover:brightness-110" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
                   Start Comparison
                 </Link>
@@ -553,42 +553,42 @@ export default function PoliticianProfile({ params }: { params: Promise<{ id: st
         )}
 
         {activeTab === 'votes' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">Voting Record</h2>
             <VotingRecord votes={politician.votingRecord} />
           </div>
         )}
 
         {activeTab === 'finance' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">Campaign Finance & Donors</h2>
             <DonorChart finance={politician.campaignFinance} />
           </div>
         )}
 
         {activeTab === 'stocks' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">Stock Trade Disclosures</h2>
             <StockTrades trades={politician.stockTrades} name={politician.name} />
           </div>
         )}
 
         {activeTab === 'consistency' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">Campaign Promise Tracker</h2>
             <ConsistencyScore data={politician.consistency} name={politician.name} />
           </div>
         )}
 
         {activeTab === 'controversies' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">Controversies & Allegations</h2>
             <ControversySection controversies={politician.controversies} name={politician.name} />
           </div>
         )}
 
         {activeTab === 'news' && (
-          <div className="bg-[#0d1f35] rounded-xl p-5 border border-[#1e3a5f]">
+          <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
             <h2 className="text-white font-bold mb-4">News & Coverage</h2>
             <NewsSection news={politician.news} name={politician.name} />
           </div>
