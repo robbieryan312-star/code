@@ -55,6 +55,25 @@ export interface TradeTimelineEvent {
   source: Source;
 }
 
+export interface StatementVsAction {
+  id: string;
+  topic: string;
+  importance: 'high' | 'medium' | 'low';
+  statement: {
+    date: string;
+    quote: string;
+    context: string;
+    source: Source;
+  };
+  action: {
+    date: string;
+    description: string;
+    source: Source;
+  };
+  gap: string;
+  verdict: 'Contradiction' | 'Partial' | 'Consistent';
+}
+
 export interface Politician {
   id: string;
   name: string;
@@ -82,6 +101,11 @@ export interface Politician {
   topIssues: Issue[];
   controversies: Controversy[];
   news: NewsItem[];
+  statementsVsActions?: StatementVsAction[];
+  approvalRating?: number;
+  approvalPollster?: string;
+  approvalSampleSize?: number;
+  approvalDate?: string;
   endorsements?: {
     endorses: { name: string; office: string; politicianId?: string; date?: string; source?: Source }[];
     endorsedBy: { name: string; office: string; politicianId?: string; date?: string; source?: Source }[];
