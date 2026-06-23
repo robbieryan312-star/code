@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Civic App — API Registration Script (Resilient Version)
-Skips any site that fails and continues to the next one.
+API Registration — Semi-Automated
+Script fills the forms, YOU verify and press Enter to continue.
 Run: python3 ~/register_apis.py
 """
 
@@ -17,214 +17,207 @@ INFO = {
     "password": "",
 }
 
-RESULTS = []
-
 def log(msg): print(msg, flush=True)
-def pause(n=3): time.sleep(n)
+def pause(n=2): time.sleep(n)
 
 def fill(page, selectors, value):
     for sel in selectors:
         try:
             els = page.locator(sel)
-            if els.count() > 0:
-                el = els.first
-                if el.is_visible(timeout=3000):
-                    el.click()
-                    el.fill(value)
-                    return True
-        except Exception:
-            pass
-    return False
-
-def click_submit(page):
-    for sel in [
-        "button[type=submit]", "input[type=submit]",
-        "button:has-text('Submit')", "button:has-text('Sign Up')",
-        "button:has-text('Register')", "button:has-text('Get Free API Key')",
-        "button:has-text('Get API Key')", "button:has-text('Request Key')",
-        "button:has-text('Create Account')", "button:has-text('Join')",
-    ]:
-        try:
-            el = page.locator(sel).first
-            if el.count() and el.is_visible(timeout=2000):
-                el.click()
+            if els.count() > 0 and els.first.is_visible(timeout=3000):
+                els.first.click()
+                pause(0.3)
+                els.first.fill(value)
                 return True
         except Exception:
             pass
     return False
 
-def register(page, name, url, steps, note):
-    log(f"\n{'='*50}")
-    log(f"  {name}")
-    log(f"  {url}")
-    log(f"{'='*50}")
-    try:
-        page.goto(url, wait_until="domcontentloaded", timeout=20000)
-        pause(3)
-        for sel_list, val in steps:
-            result = fill(page, sel_list, val)
-            if not result:
-                log(f"  (field not found — may already be filled or form differs)")
-        pause(1)
-        click_submit(page)
-        pause(4)
-        RESULTS.append({"name": name, "status": "SUBMITTED", "note": note})
-        log(f"  SUBMITTED — {note}")
-    except Exception as e:
-        RESULTS.append({"name": name, "status": "FAILED", "note": str(e)[:80]})
-        log(f"  FAILED: {e}")
-    pause(2)
+def wait_for_user(site_name):
+    log(f"\n  >>> Check the browser window for {site_name}")
+    log(f"  >>> Fix anything that didn't fill, solve any CAPTCHA, then click Submit")
+    log(f"  >>> Press Enter here when done (or type 'skip' to skip this site): ")
+    response = input("  >>> ").strip().lower()
+    return response != "skip"
+
+SITES = [
+    {
+        "name": "1/12  Alpha Vantage",
+        "url":  "https://www.alphavantage.co/support/#api-key",
+        "note": "KEY SHOWN ON PAGE after submit — write it down before pressing Enter",
+        "fields": [
+            (["input[name=email]","input[type=email]","input[placeholder*='email' i]"], "email"),
+            (["input[name=organization]","input[placeholder*='organ' i]","input[placeholder*='company' i]"], "org"),
+        ]
+    },
+    {
+        "name": "2/12  FEC (api.data.gov)",
+        "url":  "https://api.data.gov/signup/",
+        "note": "Key will be emailed to robbie.ryan312@gmail.com",
+        "fields": [
+            (["input[name=user_first_name]","input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name=user_last_name]","input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name=user_email]","input[name*=email]","input[type=email]"], "email"),
+            (["input[name=user_how_hear]","textarea","input[name*=use]"], "purpose"),
+        ]
+    },
+    {
+        "name": "3/12  Congress.gov",
+        "url":  "https://api.congress.gov/sign-up/",
+        "note": "Key will be emailed to robbie.ryan312@gmail.com",
+        "fields": [
+            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
+            (["textarea","input[name*=use]","input[name*=purpose]"], "purpose"),
+        ]
+    },
+    {
+        "name": "4/12  Census Bureau",
+        "url":  "https://api.census.gov/data/key_signup.html",
+        "note": "Key will be emailed to robbie.ryan312@gmail.com",
+        "fields": [
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
+        ]
+    },
+    {
+        "name": "5/12  NewsAPI",
+        "url":  "https://newsapi.org/register",
+        "note": "Key shown in dashboard after registration",
+        "fields": [
+            (["input[name=firstName]","input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name=lastName]","input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name=email]","input[type=email]"], "email"),
+            (["input[name=password]","input[type=password]"], "password"),
+        ]
+    },
+    {
+        "name": "6/12  Open States",
+        "url":  "https://openstates.org/accounts/signup/",
+        "note": "Verify email then find API key in account dashboard",
+        "fields": [
+            (["input[name=email]","input[type=email]"], "email"),
+            (["input[name=password1]","input[name=password]","input[type=password]"], "password"),
+            (["input[name=password2]","input[name*=confirm]"], "password"),
+        ]
+    },
+    {
+        "name": "7/12  ProPublica Congress API",
+        "url":  "https://www.propublica.org/datastore/api/propublica-congress-api",
+        "note": "Key will be emailed to robbie.ryan312@gmail.com",
+        "fields": [
+            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
+            (["textarea","input[name*=use]"], "purpose"),
+        ]
+    },
+    {
+        "name": "8/12  LegiScan",
+        "url":  "https://legiscan.com/legiscan",
+        "note": "Key will be emailed to robbie.ryan312@gmail.com",
+        "fields": [
+            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["textarea","input[name*=use]"], "purpose"),
+        ]
+    },
+    {
+        "name": "9/12  OpenSecrets",
+        "url":  "https://www.opensecrets.org/api/admin/index.php?function=signup",
+        "note": "Manual approval 1-2 days — key emailed when approved",
+        "fields": [
+            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
+            (["textarea","input[name*=use]"], "purpose"),
+        ]
+    },
+    {
+        "name": "10/12  VoteSmart",
+        "url":  "https://votesmart.org/share/api",
+        "note": "Manual approval 1-3 days — key emailed when approved",
+        "fields": [
+            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
+            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
+            (["textarea","input[name*=use]"], "purpose"),
+        ]
+    },
+    {
+        "name": "11/12  FRED (Federal Reserve)",
+        "url":  "https://fredaccount.stlouisfed.org/public/login/index",
+        "note": "After account created: My Account → API Keys → Request Key",
+        "fields": [
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[type=password]","input[name*=password]"], "password"),
+        ]
+    },
+    {
+        "name": "12/12  MediaStack",
+        "url":  "https://mediastack.com/signup/free",
+        "note": "Key shown in dashboard after signup",
+        "fields": [
+            (["input[name*=email]","input[type=email]"], "email"),
+            (["input[type=password]","input[name*=password]"], "password"),
+        ]
+    },
+]
 
 def main():
     INFO["password"] = getpass.getpass("Choose a password for new accounts (8+ chars): ")
     if len(INFO["password"]) < 8:
-        print("Password must be at least 8 characters.")
+        print("Need at least 8 characters.")
         sys.exit(1)
 
-    f  = INFO["first"]
-    l  = INFO["last"]
-    e  = INFO["email"]
-    o  = INFO["org"]
-    pu = INFO["purpose"]
-    pw = INFO["password"]
-
-    # Common selector lists
-    fn = ["input[name*=first]",    "input[placeholder*='first' i]",    "#firstName",  "#first_name",  "input[id*=first i]"]
-    ln = ["input[name*=last]",     "input[placeholder*='last' i]",     "#lastName",   "#last_name",   "input[id*=last i]"]
-    em = ["input[name*=email]",    "input[type=email]",                "#email",      "input[id*=email i]"]
-    og = ["input[name*=org]",      "input[placeholder*='organ' i]",    "#organization","input[name*=company]","input[placeholder*='company' i]"]
-    us = ["textarea",              "input[name*=use]",                 "input[name*=purpose]", "textarea[name*=descr]", "input[placeholder*='use' i]"]
-    pw1= ["input[type=password]",  "input[name*=password]",            "input[name=password1]","input[id*=pass i]"]
-    pw2= ["input[name=password2]", "input[name*=confirm]",             "input[id*=confirm i]", "input[placeholder*='confirm' i]"]
-
     with sync_playwright() as p:
-        log("Opening browser...")
-        browser = p.chromium.launch(headless=False, slow_mo=200)
+        log("\nOpening browser...")
+        browser = p.chromium.launch(headless=False, slow_mo=100)
         ctx  = browser.new_context(viewport={"width": 1280, "height": 900})
         page = ctx.new_page()
-        page.set_default_timeout(15000)
+        page.set_default_timeout(20000)
 
-        # ── 1. Alpha Vantage ───────────────────────────────────────────────────
-        register(page, "Alpha Vantage (Stock Data)",
-            "https://www.alphavantage.co/support/#api-key",
-            [(em, e), (og, o)],
-            "KEY SHOWN ON PAGE — write it down before moving on")
+        for site in SITES:
+            log(f"\n{'─'*55}")
+            log(f"  NEXT: {site['name']}")
+            log(f"  Note: {site['note']}")
+            log(f"{'─'*55}")
 
-        # ── 2. FEC / api.data.gov ─────────────────────────────────────────────
-        register(page, "FEC Campaign Finance (api.data.gov)",
-            "https://api.data.gov/signup/",
-            [(fn, f), (ln, l), (em, e), (us, pu)],
-            "Key emailed to robbie.ryan312@gmail.com")
+            try:
+                page.goto(site["url"], wait_until="networkidle", timeout=25000)
+                pause(2)
+                for sel_list, key in site["fields"]:
+                    val = INFO[key]
+                    result = fill(page, sel_list, val)
+                    if not result:
+                        log(f"  (could not auto-fill a field — fill it manually in the browser)")
+            except Exception as e:
+                log(f"  Page load issue: {e}")
+                log(f"  The browser should still be on the page — fill it manually.")
 
-        # ── 3. Congress.gov ───────────────────────────────────────────────────
-        register(page, "Congress.gov Official Bills API",
-            "https://api.congress.gov/sign-up/",
-            [(fn, f), (ln, l), (em, e), (og, o), (us, pu)],
-            "Key emailed to robbie.ryan312@gmail.com")
+            wait_for_user(site["name"])
 
-        # ── 4. Census Bureau ──────────────────────────────────────────────────
-        register(page, "Census Bureau Demographics",
-            "https://api.census.gov/data/key_signup.html",
-            [(em, e), (og, o)],
-            "Key emailed to robbie.ryan312@gmail.com")
-
-        # ── 5. NewsAPI ────────────────────────────────────────────────────────
-        register(page, "NewsAPI (News Search)",
-            "https://newsapi.org/register",
-            [(fn, f), (ln, l), (em, e), (pw1, pw)],
-            "Key shown in dashboard after signup")
-
-        # ── 6. MediaStack ─────────────────────────────────────────────────────
-        register(page, "MediaStack (News Backup)",
-            "https://mediastack.com/signup/free",
-            [(em, e), (pw1, pw)],
-            "Key shown in dashboard after signup")
-
-        # ── 7. Open States ────────────────────────────────────────────────────
-        register(page, "Open States (State Legislatures)",
-            "https://openstates.org/accounts/signup/",
-            [(em, e), (pw1, pw), (pw2, pw)],
-            "Verify email → log in → API Key in dashboard")
-
-        # ── 8. ProPublica ─────────────────────────────────────────────────────
-        register(page, "ProPublica Congress API",
-            "https://www.propublica.org/datastore/api/propublica-congress-api",
-            [(fn, f), (ln, l), (em, e), (og, o), (us, pu)],
-            "Key emailed to robbie.ryan312@gmail.com")
-
-        # ── 9. LegiScan ───────────────────────────────────────────────────────
-        register(page, "LegiScan (All 50 States Bills)",
-            "https://legiscan.com/legiscan",
-            [(fn, f), (ln, l), (em, e), (us, pu)],
-            "Key emailed to robbie.ryan312@gmail.com")
-
-        # ── 10. OpenSecrets ───────────────────────────────────────────────────
-        register(page, "OpenSecrets (Money in Politics)",
-            "https://www.opensecrets.org/api/admin/index.php?function=signup",
-            [(fn, f), (ln, l), (em, e), (og, o), (us, pu)],
-            "Approval takes 1-2 days — key emailed when approved")
-
-        # ── 11. VoteSmart ─────────────────────────────────────────────────────
-        register(page, "VoteSmart (Interest Group Ratings)",
-            "https://votesmart.org/share/api",
-            [(fn, f), (ln, l), (em, e), (og, o), (us, pu)],
-            "Manual approval 1-3 business days — key emailed when approved")
-
-        # ── 12. FRED (Federal Reserve) ────────────────────────────────────────
-        register(page, "FRED Federal Reserve Economic Data",
-            "https://fredaccount.stlouisfed.org/public/login/index",
-            [(em, e), (pw1, pw)],
-            "After creating account: My Account → API Keys → Request Key")
-
-        # ── 13. Ballotpedia ───────────────────────────────────────────────────
-        register(page, "Ballotpedia API (Political Encyclopedia)",
-            "https://ballotpedia.org/Ballotpedia:API_support",
-            [(em, e), (us, pu)],
-            "Contact-based — they will email robbie.ryan312@gmail.com")
-
-        # ── 14. The Marshall Project ──────────────────────────────────────────
-        register(page, "The Marshall Project (Criminal Justice Data)",
-            "https://www.themarshallproject.org/subscribe",
-            [(em, e)],
-            "Newsletter + data access")
-
-        # ── 15. CourtListener (Free Law Project) ──────────────────────────────
-        register(page, "CourtListener (Federal Court Records)",
-            "https://www.courtlistener.com/sign-in/",
-            [(em, e), (pw1, pw)],
-            "Free API — no key needed but account gives higher limits")
-
-        # ── SUMMARY ───────────────────────────────────────────────────────────
-        log(f"\n{'='*60}")
-        log("COMPLETE — SUMMARY OF ALL REGISTRATIONS")
-        log(f"{'='*60}")
-        log(f"Password used for all accounts: {pw}")
-        log("SAVE THIS PASSWORD — needed to log into each account\n")
-
-        submitted = [r for r in RESULTS if r["status"] == "SUBMITTED"]
-        failed    = [r for r in RESULTS if r["status"] == "FAILED"]
-
-        log(f"Submitted ({len(submitted)}):")
-        for r in submitted:
-            log(f"  ✓ {r['name']}: {r['note']}")
-
-        if failed:
-            log(f"\nFailed ({len(failed)}) — visit these manually:")
-            for r in failed:
-                log(f"  ✗ {r['name']}: {r['note']}")
-
-        log("\nCheck robbie.ryan312@gmail.com for keys from:")
-        log("  FEC, Congress.gov, Census, ProPublica, LegiScan")
-        log("\nPending manual approval (keys arrive by email in 1-3 days):")
+        log(f"\n{'='*55}")
+        log("ALL DONE")
+        log(f"{'='*55}")
+        log(f"Password used: {INFO['password']}  ← SAVE THIS")
+        log("\nExpect emails at robbie.ryan312@gmail.com from:")
+        log("  FEC, Congress.gov, Census Bureau, ProPublica, LegiScan")
+        log("\nApproval pending (keys arrive in 1-3 days):")
         log("  OpenSecrets, VoteSmart")
-        log("\nStill needs your Google account (do this manually):")
-        log("  Google Civic API → console.cloud.google.com")
+        log("\nOne more to do manually (needs your Google login):")
+        log("  Google Civic → console.cloud.google.com")
         log("  New project 'CivicApp' → Enable Civic Information API → Create API Key")
-        log(f"{'='*60}")
-
-        log("\nBrowser stays open 2 minutes — check any open tabs for keys.")
-        pause(120)
+        log(f"{'='*55}")
+        pause(30)
         browser.close()
 
 if __name__ == "__main__":
     main()
+
