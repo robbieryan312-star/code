@@ -195,12 +195,25 @@ export interface TermConsistency {
   keyChanges: string[];
 }
 
+export type EvidenceType = 'vote' | 'quote' | 'statement' | 'action' | 'legislation' | 'committee_action';
+
+export interface EvidenceItem {
+  type: EvidenceType;
+  description: string;
+  quote?: string;
+  date: string;
+  source: Source;
+  voteId?: string;
+}
+
 export interface Issue {
   name: string;
   position: string;
   detail: string;
   category: string;
   source?: Source;
+  statement?: string;
+  evidence?: EvidenceItem[];
 }
 
 export type RaceRating = 'Solid R' | 'Likely R' | 'Lean R' | 'Toss-up' | 'Lean D' | 'Likely D' | 'Solid D';

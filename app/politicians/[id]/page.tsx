@@ -30,7 +30,7 @@ const tabs = [
   { id: 'endorsements',  label: 'Endorsements',   icon: Users },
 ];
 
-import { Issue, Politician, VoteRecord } from '@/lib/types';
+import { EvidenceItem, Issue, Politician, VoteRecord } from '@/lib/types';
 
 // ── Hot Topics quick-view ────────────────────────────────────────────────────
 type HotTopicDef = { id: string; label: string; Icon: React.ElementType; keywords: string[] };
@@ -68,7 +68,7 @@ function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[
   return (
     <div className="rounded-xl border border-white/[0.08] p-5 mb-6" style={{ background: 'rgba(11,25,41,0.7)' }}>
       <h2 className="text-white font-bold mb-1">Where They Stand — Key Issues</h2>
-      <p className="text-white/35 text-xs mb-4">Click any topic to see their position, actions taken, and source</p>
+      <p className="text-white/35 text-xs mb-4">Click any topic to see positions based on recorded votes, statements, and actions — not editorial opinion</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         {HOT_TOPICS.map(topic => {
           const matched = matchTopic(issues, topic);
@@ -99,7 +99,7 @@ function HotTopicsPanel({ issues, votes }: { issues: Issue[]; votes: VoteRecord[
 
               {isOpen && matched && (
                 <div className="mt-1 rounded-xl border border-[#d4ac52]/25 p-3 text-xs space-y-2" style={{ background: 'rgba(5,9,15,0.85)' }}>
-                  <p className="text-gray-300 leading-relaxed">{matched.detail}</p>
+                  <p className="text-gray-300 leading-relaxed italic">{matched.statement ?? matched.detail}</p>
                   {matched.source && (
                     <div className="flex items-center gap-2 pt-1 border-t border-[#1e3a5f]">
                       <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
@@ -152,8 +152,75 @@ function formatMoney(n: number): string {
   return `$${n}`;
 }
 
-function IssueAccordion({ issues }: { issues: Issue[] }) {
+const EVIDENCE_TYPE_STYLE: Record<string, string> = {
+  vote:             'bg-blue-500/20 text-blue-300 border-blue-500/20',
+  legislation:      'bg-green-500/20 text-green-300 border-green-500/20',
+  quote:            'bg-purple-500/20 text-purple-300 border-purple-500/20',
+  statement:        'bg-gray-500/20 text-gray-300 border-gray-500/20',
+  action:           'bg-orange-500/20 text-orange-300 border-orange-500/20',
+  committee_action: 'bg-teal-500/20 text-teal-300 border-teal-500/20',
+};
+
+function EvidenceRow({ item }: { item: EvidenceItem }) {
+  return (
+    <div className="rounded-lg p-2.5 border border-white/[0.05]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      <div className="flex items-start gap-2">
+        <span className={`text-[10px] px-1.5 py-0.5 rounded border font-semibold uppercase tracking-wide flex-shrink-0 mt-0.5 ${EVIDENCE_TYPE_STYLE[item.type] || EVIDENCE_TYPE_STYLE.statement}`}>
+          {item.type.replace('_', ' ')}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-white/65 text-xs leading-relaxed">{item.description}</p>
+          {item.quote && (
+            <blockquote className="mt-1 pl-2.5 border-l-2 border-[#c8a951]/40 text-[#c8a951]/70 text-xs italic leading-relaxed">
+              &ldquo;{item.quote}&rdquo;
+            </blockquote>
+          )}
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="text-[10px] text-gray-600">{item.date}</span>
+            <span className={`text-[10px] px-1.5 py-0 rounded ${
+              item.source.tier === 'official'    ? 'bg-green-500/10 text-green-400' :
+              item.source.tier === 'nonpartisan' ? 'bg-blue-500/10 text-blue-400' :
+              'bg-gray-500/10 text-gray-400'
+            }`}>{item.source.tier}</span>
+            {item.source.url ? (
+              <a href={item.source.url} target="_blank" rel="noopener noreferrer"
+                 className="text-[10px] text-[#c8a951]/70 hover:text-[#c8a951] flex items-center gap-0.5 transition-colors">
+                {item.source.name} <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            ) : (
+              <span className="text-[10px] text-gray-600">{item.source.name}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConvergenceIndicator({ evidence }: { evidence: EvidenceItem[] }) {
+  const uniqueSources = new Set(evidence.map((e) => e.source.name)).size;
+  const filled = Math.min(5, evidence.length);
+  const label =
+    uniqueSources >= 3 ? `${uniqueSources} independent sources point to the same conclusion` :
+    uniqueSources === 2 ? 'Corroborated by 2 independent sources' :
+    'Single source — treat with appropriate caution';
+  const color = uniqueSources >= 3 ? 'text-green-400' : uniqueSources === 2 ? 'text-[#c8a951]' : 'text-gray-500';
+  return (
+    <div className="flex items-center gap-2 mt-2 mb-2">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span key={n} className={`inline-block w-2 h-2 rounded-full ${n <= filled ? 'bg-[#c8a951]' : 'bg-white/[0.08]'}`} />
+        ))}
+      </div>
+      <span className={`text-[10px] font-medium ${color}`}>{label}</span>
+    </div>
+  );
+}
+
+function IssueAccordion({ issues, politicianName }: { issues: Issue[]; politicianName: string }) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const lastName = politicianName.split(' ').pop() ?? politicianName;
+
   return (
     <div className="space-y-2">
       {issues.map((issue, i) => (
@@ -167,6 +234,11 @@ function IssueAccordion({ issues }: { issues: Issue[] }) {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-white font-medium text-sm">{issue.name}</span>
                 <span className="text-xs text-white/35 px-2 py-0 rounded-full border border-white/[0.07]">{issue.category}</span>
+                {issue.evidence && issue.evidence.length > 0 && (
+                  <span className="text-[10px] text-[#c8a951]/60 border border-[#c8a951]/20 px-1.5 py-0 rounded-full">
+                    {issue.evidence.length} evidence item{issue.evidence.length !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
               <div className="text-xs mt-0.5" style={{ color: '#d4ac52' }}>{issue.position}</div>
             </div>
@@ -174,10 +246,29 @@ function IssueAccordion({ issues }: { issues: Issue[] }) {
               ? <ChevronDown className="h-3.5 w-3.5 text-white/30 flex-shrink-0" />
               : <ChevronRight className="h-3.5 w-3.5 text-white/30 flex-shrink-0" />}
           </button>
+
           {openIdx === i && (
-            <div className="px-4 pb-3 border-t border-white/[0.06] space-y-2" style={{ background: 'rgba(5,9,15,0.4)' }}>
-              <p className="text-white/60 text-xs leading-relaxed pt-2">{issue.detail}</p>
-              {issue.source && (
+            <div className="px-4 pb-4 border-t border-white/[0.06]" style={{ background: 'rgba(5,9,15,0.4)' }}>
+
+              {/* Convergence indicator */}
+              {issue.evidence && issue.evidence.length > 0 && (
+                <ConvergenceIndicator evidence={issue.evidence} />
+              )}
+
+              {/* Qualified statement */}
+              <p className="text-white/60 text-xs leading-relaxed pt-2 mb-3 italic border-l-2 border-[#c8a951]/30 pl-3">
+                {issue.statement ?? `Available evidence suggests ${lastName} ${issue.detail.charAt(0).toLowerCase()}${issue.detail.slice(1)}`}
+              </p>
+
+              {/* Evidence items */}
+              {issue.evidence && issue.evidence.length > 0 ? (
+                <div className="space-y-2">
+                  {issue.evidence.map((ev, j) => (
+                    <EvidenceRow key={j} item={ev} />
+                  ))}
+                </div>
+              ) : issue.source ? (
+                /* Fallback: single legacy source */
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${
                     issue.source.tier === 'official'    ? 'bg-green-500/15 text-green-400' :
@@ -193,7 +284,7 @@ function IssueAccordion({ issues }: { issues: Issue[] }) {
                     <span className="text-xs text-white/30">Source: {issue.source.name}</span>
                   )}
                 </div>
-              )}
+              ) : null}
             </div>
           )}
         </div>
@@ -492,8 +583,8 @@ export default function PoliticianProfile({ params, searchParams }: { params: Pr
             {/* Top Issues */}
             <div className="rounded-xl p-5 border border-white/[0.08]" style={{ background: 'rgba(11,25,41,0.7)' }}>
               <h2 className="text-white font-bold mb-1">Key Positions</h2>
-              <p className="text-gray-500 text-xs mb-4">Click each issue to see detail and sources</p>
-              <IssueAccordion issues={politician.topIssues} />
+              <p className="text-gray-500 text-xs mb-4">Click each issue to see evidence and sources — positions expressed as what available records show, not as definitive statements</p>
+              <IssueAccordion issues={politician.topIssues} politicianName={politician.name} />
             </div>
 
             {/* Quick Stats */}

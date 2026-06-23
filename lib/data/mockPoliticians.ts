@@ -1,4 +1,8 @@
-import { Politician, Source } from '../types';
+import { Politician, Source, EvidenceItem } from '../types';
+
+// Reusable evidence source references (for EvidenceItem arrays)
+const CSPAN: Source = { name: 'C-SPAN', url: 'https://www.c-span.org', tier: 'nonpartisan', description: 'Official video archive of congressional proceedings and floor speeches' };
+const SENATE_GOV: Source = { name: 'senate.gov', url: 'https://www.senate.gov', tier: 'official', description: 'Official U.S. Senate records and roll-call votes' };
 
 // Reusable verified sources
 const FEC: Source = { name: 'Federal Election Commission', url: 'https://www.fec.gov', tier: 'official', description: 'Campaign finance disclosures' };
@@ -28,11 +32,143 @@ export const mockPoliticians: Politician[] = [
     nextElection: '2028',
     committees: ['Budget Committee (Chair)', 'Veterans Affairs', 'Energy & Natural Resources', 'Environment & Public Works'],
     topIssues: [
-      { name: 'Healthcare', position: 'Medicare for All', detail: 'Supports universal single-payer healthcare; introduced S.1129 Medicare for All Act in 2017, 2019, 2021, and 2023. Opposes private insurance industry control of healthcare.', category: 'Healthcare', source: CONGRESS_GOV },
-      { name: 'Economic Inequality', position: 'Wealth Tax & Worker Rights', detail: 'Advocates for annual tax on wealth over $32M; co-sponsored multiple wealth tax bills. Supports $17/hr minimum wage and expanded union organizing rights.', category: 'Economy', source: CONGRESS_GOV },
-      { name: 'Climate Change', position: 'Green New Deal', detail: 'Supports aggressive renewable energy transition; cosponsored S.J.Res.8 Green New Deal resolution. Calls for 100% clean energy by 2030 and a federal job guarantee for displaced workers.', category: 'Environment', source: CONGRESS_GOV },
-      { name: 'Education', position: 'Free Public College; Student Debt Cancellation', detail: 'Advocates for tuition-free public colleges via College for All Act. Supports canceling all federal student debt. Opposes for-profit colleges receiving federal aid.', category: 'Education', source: CONGRESS_GOV },
-      { name: 'Foreign Policy', position: 'Non-interventionist; end endless wars', detail: 'Voted NO on the 2002 Iraq War AUMF as a House member (one of 133 opposing). Authored S.J.Res.7 (Yemen War Powers Resolution, 2019) — passed Senate 54–46 and House 247–175, vetoed by President Trump. Opposes unconditional military aid; has criticized U.S. arms sales to Saudi Arabia. Supports diplomacy-first foreign policy and reducing overseas military commitments.', category: 'Foreign Policy', source: CONGRESS_GOV },
+      {
+        name: 'Healthcare',
+        position: 'Medicare for All',
+        detail: 'Introduced S.1129 Medicare for All Act in 2017, 2019, 2021, and 2023 as primary sponsor. Voted against every ACA repeal attempt. No PAC money from health insurance or pharmaceutical industries.',
+        category: 'Healthcare',
+        statement: 'Available evidence suggests Sanders has consistently supported universal single-payer healthcare across multiple Congresses, both as a primary bill sponsor and through related votes. No votes in opposition to expanded healthcare access have been identified in the official record.',
+        evidence: [
+          {
+            type: 'legislation',
+            description: 'Introduced S.1129 — Medicare for All Act as lead sponsor in four consecutive Congresses (2017, 2019, 2021, 2023). Bill would replace private health insurance with a federal program covering all Americans.',
+            date: '2017-09-13',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'vote',
+            description: 'Voted NAY on H.R.1628 — American Health Care Act (ACA repeal attempt). Bill failed after three Republican senators voted against it.',
+            date: '2017-07-25',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'vote',
+            description: 'Voted YEA on the Inflation Reduction Act (S.3600), which included provisions allowing Medicare to negotiate drug prices — the first time such authority was granted.',
+            date: '2022-08-07',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'statement',
+            description: 'Publicly stated position across both presidential campaigns (2016, 2020) and multiple Senate floor speeches, consistently framing healthcare as a right rather than a commodity.',
+            quote: 'Healthcare is a right of all people, not a privilege.',
+            date: '2019-04-09',
+            source: CSPAN,
+          },
+        ] as EvidenceItem[],
+      },
+      {
+        name: 'Economic Inequality',
+        position: 'Wealth Tax & Worker Rights',
+        detail: 'Advocates for annual tax on wealth over $32M; co-sponsored multiple wealth tax bills. Supports $17/hr minimum wage and expanded union organizing rights.',
+        category: 'Economy',
+        statement: 'Available evidence suggests Sanders has consistently advocated for higher taxes on concentrated wealth and expanded labor rights, reflected in sponsored legislation and campaign finance practices. His campaigns accepted no PAC or corporate bundler money — FEC records show average donations under $30.',
+        evidence: [
+          {
+            type: 'legislation',
+            description: 'Introduced the Ultra-Millionaire Tax Act (2021) — 2% annual tax on wealth over $50M and 3% on wealth over $1B.',
+            date: '2021-03-01',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'legislation',
+            description: 'Co-sponsored the Raise the Wage Act — phased increase to $17/hour federal minimum wage. Introduced alongside Rep. Bobby Scott (D-VA).',
+            date: '2021-01-26',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'action',
+            description: 'FEC records for both presidential campaigns (2016, 2020) show $0 from PACs, Super PACs, or corporate bundlers. Average individual donation under $30 in both cycles.',
+            date: '2020-02-01',
+            source: FEC,
+          },
+          {
+            type: 'vote',
+            description: 'Voted YEA on CHIPS and Science Act ($280B for domestic semiconductor manufacturing and worker investment programs).',
+            date: '2022-07-27',
+            source: CONGRESS_GOV,
+          },
+        ] as EvidenceItem[],
+      },
+      {
+        name: 'Climate Change',
+        position: 'Green New Deal',
+        detail: 'Cosponsored S.J.Res.8 Green New Deal resolution. Calls for 100% clean energy by 2030 and a federal job guarantee for displaced workers. Voted for the Inflation Reduction Act — the largest U.S. climate investment in history.',
+        category: 'Environment',
+        statement: 'Available evidence suggests Sanders has consistently supported aggressive climate policy. He co-sponsored the Green New Deal resolution and voted for the Inflation Reduction Act. No votes against major climate legislation have been identified in the official record.',
+        evidence: [
+          {
+            type: 'legislation',
+            description: 'Co-sponsored S.J.Res.8 — Green New Deal Resolution, calling for 100% clean and renewable energy by 2030 and a federal jobs guarantee for displaced fossil fuel workers.',
+            date: '2019-02-07',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'vote',
+            description: 'Voted YEA on the Inflation Reduction Act — $369B in climate investments, the largest climate spending bill in U.S. history.',
+            date: '2022-08-07',
+            source: CONGRESS_GOV,
+          },
+        ] as EvidenceItem[],
+      },
+      {
+        name: 'Education',
+        position: 'Free Public College; Student Debt Cancellation',
+        detail: 'Advocates for tuition-free public colleges via College for All Act. Supports canceling all federal student debt. Opposes for-profit colleges receiving federal aid.',
+        category: 'Education',
+        statement: 'Available evidence suggests Sanders has consistently supported tuition-free public college and student debt cancellation through legislation. His College for All Act has been introduced in multiple Congresses.',
+        evidence: [
+          {
+            type: 'legislation',
+            description: 'Introduced the College for All Act (multiple sessions) — would make public 4-year colleges tuition-free and community colleges debt-free. Funded via tax on Wall Street speculation.',
+            date: '2017-04-03',
+            source: CONGRESS_GOV,
+          },
+        ] as EvidenceItem[],
+      },
+      {
+        name: 'Foreign Policy',
+        position: 'Non-interventionist; skeptic of unconditional foreign aid',
+        detail: 'Voted NO on the 2002 Iraq War AUMF as a House member (one of 133 opposing). Authored S.J.Res.7 (Yemen War Powers Resolution, 2019) — passed Senate 54–46 and House 247–175, vetoed by President Trump. Has voted against some foreign aid packages on oversight grounds. Criticized unconditional U.S. arms sales.',
+        category: 'Foreign Policy',
+        statement: 'Available evidence suggests Sanders has maintained a consistent non-interventionist record across decades, as documented in official roll-call records. His 2002 Iraq War vote and 2019 Yemen resolution are the most cited evidence points. His broader foreign aid voting record is more mixed — he has supported some aid packages and opposed others on oversight grounds, which should be noted as context.',
+        evidence: [
+          {
+            type: 'vote',
+            description: 'Voted NAY on H.J.Res.114 — Authorization for Use of Military Force Against Iraq (2002) as a House member. Roll-call shows 133 members in opposition; 296 in favor.',
+            date: '2002-10-10',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'legislation',
+            description: 'Authored S.J.Res.7 — Yemen War Powers Resolution (2019). Passed Senate 54–46 (bipartisan) and House 247–175. Would have required withdrawal of U.S. military forces from Yemen Civil War. Vetoed by President Trump on April 16, 2019.',
+            date: '2019-03-13',
+            source: CONGRESS_GOV,
+          },
+          {
+            type: 'vote',
+            description: 'Voted NAY on H.R.815 — National Security Supplemental (2024) providing aid to Ukraine, Israel, and Taiwan. Sanders cited concerns about unconditional aid and civilian casualties in Gaza. The bill passed 79-18.',
+            date: '2024-04-23',
+            source: SENATE_GOV,
+          },
+          {
+            type: 'statement',
+            description: 'Made multiple public statements critical of U.S. arms sales to Saudi Arabia and called for conditioning military aid on human rights compliance.',
+            quote: 'We cannot continue to be the policeman of the world, spending more on the military than the next 11 nations combined.',
+            date: '2020-02-25',
+            source: AP,
+          },
+        ] as EvidenceItem[],
+      },
     ],
     votingRecord: [
       {
