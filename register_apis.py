@@ -1,223 +1,198 @@
 #!/usr/bin/env python3
 """
-API Registration — Semi-Automated
-Script fills the forms, YOU verify and press Enter to continue.
+API Registration — Full Automation v3
 Run: python3 ~/register_apis.py
 """
-
 from playwright.sync_api import sync_playwright
 import time, sys, getpass
 
 INFO = {
-    "first":   "Robert",
-    "last":    "Ryan",
-    "email":   "robbie.ryan312@gmail.com",
-    "org":     "Independent",
-    "purpose": "Non-commercial civic transparency app displaying objective, sourced voting records, campaign finance data, and documented public positions of elected officials to help voters make informed decisions.",
+    "first":    "Robert",
+    "last":     "Ryan",
+    "email":    "robbie.ryan312@gmail.com",
+    "org":      "Independent",
+    "purpose":  "Non-commercial civic transparency app displaying objective, sourced voting records, campaign finance data, and documented public positions of elected officials to help voters make informed decisions.",
     "password": "",
 }
 
-def log(msg): print(msg, flush=True)
-def pause(n=2): time.sleep(n)
+DONE = []
 
-def fill(page, selectors, value):
-    for sel in selectors:
+def log(msg): print(msg, flush=True)
+def snooze(n): time.sleep(n)
+
+def smart_fill(page, value, labels=(), placeholders=(), css=()):
+    for label in labels:
         try:
-            els = page.locator(sel)
-            if els.count() > 0 and els.first.is_visible(timeout=3000):
-                els.first.click()
-                pause(0.3)
-                els.first.fill(value)
-                return True
-        except Exception:
-            pass
+            el = page.get_by_label(label, exact=False)
+            if el.count() and el.first.is_visible(timeout=2000):
+                el.first.click(); snooze(0.2); el.first.fill(value); return True
+        except: pass
+    for ph in placeholders:
+        try:
+            el = page.get_by_placeholder(ph, exact=False)
+            if el.count() and el.first.is_visible(timeout=2000):
+                el.first.click(); snooze(0.2); el.first.fill(value); return True
+        except: pass
+    for sel in css:
+        try:
+            el = page.locator(sel).first
+            if el.count() and el.is_visible(timeout=2000):
+                el.click(); snooze(0.2); el.fill(value); return True
+        except: pass
     return False
 
-def wait_for_user(site_name):
-    log(f"\n  >>> Check the browser window for {site_name}")
-    log(f"  >>> Fix anything that didn't fill, solve any CAPTCHA, then click Submit")
-    log(f"  >>> Press Enter here when done (or type 'skip' to skip this site): ")
-    response = input("  >>> ").strip().lower()
-    return response != "skip"
+def smart_submit(page):
+    for method in [
+        lambda: page.get_by_role("button", name="Submit").first.click(),
+        lambda: page.get_by_role("button", name="Sign Up").first.click(),
+        lambda: page.get_by_role("button", name="Register").first.click(),
+        lambda: page.get_by_role("button", name="Create Account").first.click(),
+        lambda: page.get_by_role("button", name="Get API Key").first.click(),
+        lambda: page.get_by_role("button", name="Request").first.click(),
+        lambda: page.locator("button[type=submit]").first.click(),
+        lambda: page.locator("input[type=submit]").first.click(),
+    ]:
+        try: method(); return True
+        except: pass
+    return False
 
-SITES = [
-    {
-        "name": "1/12  Alpha Vantage",
-        "url":  "https://www.alphavantage.co/support/#api-key",
-        "note": "KEY SHOWN ON PAGE after submit — write it down before pressing Enter",
-        "fields": [
-            (["input[name=email]","input[type=email]","input[placeholder*='email' i]"], "email"),
-            (["input[name=organization]","input[placeholder*='organ' i]","input[placeholder*='company' i]"], "org"),
-        ]
-    },
-    {
-        "name": "2/12  FEC (api.data.gov)",
-        "url":  "https://api.data.gov/signup/",
-        "note": "Key will be emailed to robbie.ryan312@gmail.com",
-        "fields": [
-            (["input[name=user_first_name]","input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name=user_last_name]","input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name=user_email]","input[name*=email]","input[type=email]"], "email"),
-            (["input[name=user_how_hear]","textarea","input[name*=use]"], "purpose"),
-        ]
-    },
-    {
-        "name": "3/12  Congress.gov",
-        "url":  "https://api.congress.gov/sign-up/",
-        "note": "Key will be emailed to robbie.ryan312@gmail.com",
-        "fields": [
-            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
-            (["textarea","input[name*=use]","input[name*=purpose]"], "purpose"),
-        ]
-    },
-    {
-        "name": "4/12  Census Bureau",
-        "url":  "https://api.census.gov/data/key_signup.html",
-        "note": "Key will be emailed to robbie.ryan312@gmail.com",
-        "fields": [
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
-        ]
-    },
-    {
-        "name": "5/12  NewsAPI",
-        "url":  "https://newsapi.org/register",
-        "note": "Key shown in dashboard after registration",
-        "fields": [
-            (["input[name=firstName]","input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name=lastName]","input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name=email]","input[type=email]"], "email"),
-            (["input[name=password]","input[type=password]"], "password"),
-        ]
-    },
-    {
-        "name": "6/12  Open States",
-        "url":  "https://openstates.org/accounts/signup/",
-        "note": "Verify email then find API key in account dashboard",
-        "fields": [
-            (["input[name=email]","input[type=email]"], "email"),
-            (["input[name=password1]","input[name=password]","input[type=password]"], "password"),
-            (["input[name=password2]","input[name*=confirm]"], "password"),
-        ]
-    },
-    {
-        "name": "7/12  ProPublica Congress API",
-        "url":  "https://www.propublica.org/datastore/api/propublica-congress-api",
-        "note": "Key will be emailed to robbie.ryan312@gmail.com",
-        "fields": [
-            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
-            (["textarea","input[name*=use]"], "purpose"),
-        ]
-    },
-    {
-        "name": "8/12  LegiScan",
-        "url":  "https://legiscan.com/legiscan",
-        "note": "Key will be emailed to robbie.ryan312@gmail.com",
-        "fields": [
-            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["textarea","input[name*=use]"], "purpose"),
-        ]
-    },
-    {
-        "name": "9/12  OpenSecrets",
-        "url":  "https://www.opensecrets.org/api/admin/index.php?function=signup",
-        "note": "Manual approval 1-2 days — key emailed when approved",
-        "fields": [
-            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
-            (["textarea","input[name*=use]"], "purpose"),
-        ]
-    },
-    {
-        "name": "10/12  VoteSmart",
-        "url":  "https://votesmart.org/share/api",
-        "note": "Manual approval 1-3 days — key emailed when approved",
-        "fields": [
-            (["input[name*=first]","input[placeholder*='first' i]"], "first"),
-            (["input[name*=last]","input[placeholder*='last' i]"], "last"),
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[name*=org]","input[placeholder*='organ' i]"], "org"),
-            (["textarea","input[name*=use]"], "purpose"),
-        ]
-    },
-    {
-        "name": "11/12  FRED (Federal Reserve)",
-        "url":  "https://fredaccount.stlouisfed.org/public/login/index",
-        "note": "After account created: My Account → API Keys → Request Key",
-        "fields": [
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[type=password]","input[name*=password]"], "password"),
-        ]
-    },
-    {
-        "name": "12/12  MediaStack",
-        "url":  "https://mediastack.com/signup/free",
-        "note": "Key shown in dashboard after signup",
-        "fields": [
-            (["input[name*=email]","input[type=email]"], "email"),
-            (["input[type=password]","input[name*=password]"], "password"),
-        ]
-    },
-]
+def go(page, name, url, actions, note):
+    log(f"\n→ {name}")
+    try:
+        page.goto(url, wait_until="networkidle", timeout=30000)
+        snooze(3)
+        for action in actions:
+            action(page)
+            snooze(0.5)
+        smart_submit(page)
+        snooze(4)
+        DONE.append(f"✓  {name} — {note}")
+        log(f"   submitted")
+    except Exception as e:
+        DONE.append(f"✗  {name} — FAILED ({str(e)[:60]})")
+        log(f"   failed: {e}")
 
 def main():
-    INFO["password"] = getpass.getpass("Choose a password for new accounts (8+ chars): ")
-    if len(INFO["password"]) < 8:
-        print("Need at least 8 characters.")
-        sys.exit(1)
+    INFO["password"] = getpass.getpass("Password for new accounts (8+ chars): ")
+    if len(INFO["password"]) < 8: sys.exit("Need 8+ characters.")
+
+    f, l, e, o, pu, pw = (INFO["first"], INFO["last"], INFO["email"],
+                           INFO["org"], INFO["purpose"], INFO["password"])
 
     with sync_playwright() as p:
-        log("\nOpening browser...")
-        browser = p.chromium.launch(headless=False, slow_mo=100)
-        ctx  = browser.new_context(viewport={"width": 1280, "height": 900})
-        page = ctx.new_page()
-        page.set_default_timeout(20000)
+        browser = p.chromium.launch(headless=False, slow_mo=150)
+        page = browser.new_context(viewport={"width":1280,"height":900}).new_page()
+        page.set_default_timeout(12000)
 
-        for site in SITES:
-            log(f"\n{'─'*55}")
-            log(f"  NEXT: {site['name']}")
-            log(f"  Note: {site['note']}")
-            log(f"{'─'*55}")
+        # 1 ── Alpha Vantage ──────────────────────────────────────────────────
+        go(page, "Alpha Vantage", "https://www.alphavantage.co/support/#api-key", [
+            lambda pg: smart_fill(pg, e, labels=["Email","Your email","E-mail"], placeholders=["email","Email"], css=["input[type=email]","input[name=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization","Company"], placeholders=["organization","company"], css=["input[name=organization]"]),
+        ], "KEY SHOWN ON PAGE — note it before closing")
 
-            try:
-                page.goto(site["url"], wait_until="networkidle", timeout=25000)
-                pause(2)
-                for sel_list, key in site["fields"]:
-                    val = INFO[key]
-                    result = fill(page, sel_list, val)
-                    if not result:
-                        log(f"  (could not auto-fill a field — fill it manually in the browser)")
-            except Exception as e:
-                log(f"  Page load issue: {e}")
-                log(f"  The browser should still be on the page — fill it manually.")
+        # 2 ── FEC ────────────────────────────────────────────────────────────
+        go(page, "FEC / api.data.gov", "https://api.data.gov/signup/", [
+            lambda pg: smart_fill(pg, f, labels=["First Name","First name"], placeholders=["First name","first name"], css=["input[name=user_first_name]","input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name","Last name"], placeholders=["Last name","last name"], css=["input[name=user_last_name]","input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email","Email address"], placeholders=["email"], css=["input[type=email]","input[name=user_email]"]),
+            lambda pg: smart_fill(pg, pu, labels=["How will you use","Use","Purpose"], placeholders=["How will you use","describe"], css=["textarea","input[name=user_how_hear]"]),
+        ], "key emailed to robbie.ryan312@gmail.com")
 
-            wait_for_user(site["name"])
+        # 3 ── Congress.gov ───────────────────────────────────────────────────
+        go(page, "Congress.gov", "https://api.congress.gov/sign-up/", [
+            lambda pg: smart_fill(pg, f, labels=["First Name"], placeholders=["First name"], css=["input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name"], placeholders=["Last name"], css=["input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization"], placeholders=["Organization"], css=["input[name*=org]"]),
+            lambda pg: smart_fill(pg, pu, labels=["Purpose","Use","How will you use"], placeholders=["purpose","use"], css=["textarea"]),
+        ], "key emailed to robbie.ryan312@gmail.com")
 
+        # 4 ── Census ─────────────────────────────────────────────────────────
+        go(page, "Census Bureau", "https://api.census.gov/data/key_signup.html", [
+            lambda pg: smart_fill(pg, e, labels=["Email","Email Address"], placeholders=["email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization"], placeholders=["Organization"], css=["input[name*=org]"]),
+        ], "key emailed to robbie.ryan312@gmail.com")
+
+        # 5 ── NewsAPI ────────────────────────────────────────────────────────
+        go(page, "NewsAPI", "https://newsapi.org/register", [
+            lambda pg: smart_fill(pg, f, labels=["First name","First Name"], placeholders=["First name"], css=["input[name=firstName]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last name","Last Name"], placeholders=["Last name"], css=["input[name=lastName]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email address","email"], css=["input[name=email]","input[type=email]"]),
+            lambda pg: smart_fill(pg, pw, labels=["Password"], placeholders=["Password"], css=["input[type=password]"]),
+        ], "key shown in dashboard after login")
+
+        # 6 ── MediaStack ─────────────────────────────────────────────────────
+        go(page, "MediaStack", "https://mediastack.com/signup/free", [
+            lambda pg: smart_fill(pg, e, labels=["Email","Email Address"], placeholders=["email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, pw, labels=["Password"], placeholders=["Password"], css=["input[type=password]"]),
+        ], "key shown in dashboard after login")
+
+        # 7 ── Open States ────────────────────────────────────────────────────
+        go(page, "Open States", "https://openstates.org/accounts/signup/", [
+            lambda pg: smart_fill(pg, e, labels=["Email","Email Address"], placeholders=["email"], css=["input[name=email]","input[type=email]"]),
+            lambda pg: smart_fill(pg, pw, labels=["Password"], placeholders=["Password"], css=["input[name=password1]","input[type=password]"]),
+            lambda pg: smart_fill(pg, pw, labels=["Password (again)","Confirm"], placeholders=["Confirm","again"], css=["input[name=password2]"]),
+        ], "verify email then get key from dashboard")
+
+        # 8 ── ProPublica ─────────────────────────────────────────────────────
+        go(page, "ProPublica", "https://www.propublica.org/datastore/api/propublica-congress-api", [
+            lambda pg: smart_fill(pg, f, labels=["First Name"], placeholders=["First name"], css=["input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name"], placeholders=["Last name"], css=["input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization"], placeholders=["Organization"], css=["input[name*=org]"]),
+            lambda pg: smart_fill(pg, pu, labels=["Intended Use","How will you use","Use"], placeholders=["intended use","how will"], css=["textarea"]),
+        ], "key emailed to robbie.ryan312@gmail.com")
+
+        # 9 ── LegiScan ───────────────────────────────────────────────────────
+        go(page, "LegiScan", "https://legiscan.com/legiscan", [
+            lambda pg: smart_fill(pg, f, labels=["First Name"], placeholders=["First"], css=["input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name"], placeholders=["Last"], css=["input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, pu, labels=["Use","Purpose","How will"], placeholders=["use","purpose"], css=["textarea"]),
+        ], "key emailed to robbie.ryan312@gmail.com")
+
+        # 10 ── OpenSecrets ───────────────────────────────────────────────────
+        go(page, "OpenSecrets", "https://www.opensecrets.org/api/admin/index.php?function=signup", [
+            lambda pg: smart_fill(pg, f, labels=["First Name"], placeholders=["First"], css=["input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name"], placeholders=["Last"], css=["input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization"], placeholders=["Organization"], css=["input[name*=org]"]),
+            lambda pg: smart_fill(pg, pu, labels=["Use","Purpose","Describe"], placeholders=["use","purpose"], css=["textarea"]),
+        ], "manual approval 1-2 days — key emailed when approved")
+
+        # 11 ── VoteSmart ─────────────────────────────────────────────────────
+        go(page, "VoteSmart", "https://votesmart.org/share/api", [
+            lambda pg: smart_fill(pg, f, labels=["First Name"], placeholders=["First"], css=["input[name*=first]"]),
+            lambda pg: smart_fill(pg, l, labels=["Last Name"], placeholders=["Last"], css=["input[name*=last]"]),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["Email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, o, labels=["Organization"], placeholders=["Organization"], css=["input[name*=org]"]),
+            lambda pg: smart_fill(pg, pu, labels=["Use","Purpose","How will"], placeholders=["use","purpose"], css=["textarea"]),
+        ], "manual approval 1-3 days — key emailed when approved")
+
+        # 12 ── FRED ──────────────────────────────────────────────────────────
+        go(page, "FRED (Federal Reserve)", "https://fredaccount.stlouisfed.org/public/login/index", [
+            lambda pg: (
+                page.get_by_text("Create Account").click() if page.get_by_text("Create Account").count() else None
+            ),
+            lambda pg: smart_fill(pg, e, labels=["Email"], placeholders=["email"], css=["input[type=email]"]),
+            lambda pg: smart_fill(pg, pw, labels=["Password"], placeholders=["password"], css=["input[type=password]"]),
+        ], "after signup: My Account → API Keys → Request Key")
+
+        # ── Summary ──────────────────────────────────────────────────────────
         log(f"\n{'='*55}")
-        log("ALL DONE")
+        log("DONE — RESULTS")
         log(f"{'='*55}")
-        log(f"Password used: {INFO['password']}  ← SAVE THIS")
-        log("\nExpect emails at robbie.ryan312@gmail.com from:")
-        log("  FEC, Congress.gov, Census Bureau, ProPublica, LegiScan")
-        log("\nApproval pending (keys arrive in 1-3 days):")
-        log("  OpenSecrets, VoteSmart")
-        log("\nOne more to do manually (needs your Google login):")
-        log("  Google Civic → console.cloud.google.com")
+        for line in DONE: log(f"  {line}")
+        log(f"\n  Password used: {pw}  ← SAVE THIS")
+        log("\n  Check robbie.ryan312@gmail.com for keys from:")
+        log("  FEC, Congress.gov, Census, ProPublica, LegiScan")
+        log("\n  Pending approval (1-3 days): OpenSecrets, VoteSmart")
+        log("\n  Do manually: Google Civic → console.cloud.google.com")
         log("  New project 'CivicApp' → Enable Civic Information API → Create API Key")
         log(f"{'='*55}")
-        pause(30)
+
+        snooze(90)
         browser.close()
 
 if __name__ == "__main__":
     main()
-
