@@ -151,29 +151,42 @@ def main():
         page = ctx.new_page()
         page.set_default_timeout(20000)
 
-        # ── Step 1: Load the UCSD guide and extract all external API links ───
-        log("\nLoading UCSD Political Science API guide...")
-        page.goto("https://ucsd.libguides.com/politicalscience/apis",
-                  wait_until="networkidle", timeout=30000)
-        snooze(3)
+        # ── Step 1: Load source pages and extract all external API links ────────
+        source_pages = [
+            "https://ucsd.libguides.com/politicalscience/apis",
+            "https://blogs.mulesoft.com/dev-guides/15-apis-to-track-election-data/",
+        ]
 
-        raw_links = page.eval_on_selector_all(
-            "a[href^='http']",
-            "els => els.map(e => ({href: e.href, text: e.innerText.trim()}))"
-        )
+        skip_domains = [
+            "ucsd.libguides.com", "libguides.com", "mulesoft.com",
+            "salesforce.com", "javascript:", "mailto:", "twitter.com",
+            "facebook.com", "linkedin.com", "youtube.com", "google.com",
+        ]
 
-        # Filter to external links only (not ucsd.libguides.com)
         seen = set()
         api_links = []
-        skip_domains = ["ucsd.libguides.com", "libguides.com", "javascript:", "mailto:"]
-        for lnk in raw_links:
-            href = lnk.get("href", "")
-            text = lnk.get("text", "").strip()
-            if not href or not text: continue
-            if any(d in href for d in skip_domains): continue
-            if href in seen: continue
-            seen.add(href)
-            api_links.append({"href": href, "text": text})
+
+        for source_url in source_pages:
+            log(f"\nLoading: {source_url}")
+            try:
+                page.goto(source_url, wait_until="networkidle", timeout=30000)
+                snooze(3)
+                raw_links = page.eval_on_selector_all(
+                    "a[href^='http']",
+                    "els => els.map(e => ({href: e.href, text: e.innerText.trim()}))"
+                )
+                before = len(api_links)
+                for lnk in raw_links:
+                    href = lnk.get("href", "")
+                    text = lnk.get("text", "").strip()
+                    if not href or not text: continue
+                    if any(d in href for d in skip_domains): continue
+                    if href in seen: continue
+                    seen.add(href)
+                    api_links.append({"href": href, "text": text})
+                log(f"  Found {len(api_links) - before} new links")
+            except Exception as ex:
+                log(f"  Could not load page: {ex}")
 
         log(f"\nFound {len(api_links)} external API/data sources on the UCSD page:")
         for i, lnk in enumerate(api_links, 1):
