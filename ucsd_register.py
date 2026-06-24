@@ -153,14 +153,12 @@ def main():
 
         # ── Step 1: Load source pages and extract all external API links ────────
         source_pages = [
-            "https://ucsd.libguides.com/politicalscience/apis",
             "https://blogs.mulesoft.com/dev-guides/15-apis-to-track-election-data/",
         ]
 
         skip_domains = [
-            "ucsd.libguides.com", "libguides.com", "mulesoft.com",
-            "salesforce.com", "javascript:", "mailto:", "twitter.com",
-            "facebook.com", "linkedin.com", "youtube.com", "google.com",
+            "mulesoft.com", "salesforce.com", "javascript:", "mailto:",
+            "twitter.com", "facebook.com", "linkedin.com", "youtube.com", "google.com",
         ]
 
         seen = set()
