@@ -1,0 +1,121 @@
+---
+description: Civic transparency app — mandatory architecture, sourcing, and data-completeness rules
+globs:
+alwaysApply: true
+---
+
+# Civic App — Mandatory Rules
+
+This file is the persistent, always-loaded ruleset for this project. It exists
+because `API_SOURCES.md` and `OBJECTIVE_SOURCES.md` contain the detailed
+reference material (endpoints, keys, per-source lean labels) but were only
+ever applied when manually pasted into a chat. That meant every fresh session
+"forgot" the rules, which is why past data collection produced inconsistent,
+partial `Politician` / `Election` / `CountyOfficial` records. Do not repeat
+that pattern — treat every rule below as mandatory, not advisory, on every
+task in this repo, without needing to be reminded.
+
+Full endpoint/key reference: `API_SOURCES.md`.
+Full source-lean/tier reference: `OBJECTIVE_SOURCES.md`.
+Next.js version note: `AGENTS.md` (read `node_modules/next/dist/docs/` before
+using any App Router / data-fetching API — this project's Next.js has
+breaking changes vs. training data).
+
+## 1. Architecture — non-negotiable
+
+- Never call an external API (ProPublica, FEC, NewsAPI, etc.) directly from
+  a client component or the browser. Every external call is proxied through
+  a route in `app/api/`.
+- Every external client lives in `lib/api/<service>.ts` and returns a typed
+  response using the shared types in `lib/types/index.ts` (extend that file
+  rather than inventing ad-hoc shapes).
+- Cache every external API response with a TTL. If Supabase is configured,
+  cache there using the `sources` table shape defined in
+  `OBJECTIVE_SOURCES.md`; otherwise cache in-memory/on-disk with an explicit
+  TTL constant — never re-fetch on every page load.
+- Every external fetch gets exponential backoff on failure: 2s, 4s, 8s, 16s.
+  After the final retry, fail into the missing-data protocol in §3 — never
+  throw an unhandled error that blanks a whole page.
+- Log every cache hit/miss so data freshness is debuggable.
+
+## 2. Source-of-truth priority order
+
+When two sources disagree on the same fact, prefer the higher-ranked source
+and cite it; do not average or silently pick one:
+
+1. Official .gov records (Congress.gov, FEC, Senate.gov, Federal Register)
+2. ProPublica
+3. AP
+4. Reuters
+5. GovTrack
+6. Voteview
+7. Ballotpedia
+8. OpenSecrets
+9. Pew Research
+10. VoteSmart
+11. PolitiFact
+12. FactCheck.org
+13. CBO
+
+## 3. Data completeness contract (fixes incomplete profiles)
+
+A `Politician`, `Election`, `Candidate`, or `CountyOfficial` record is
+**not done** just because the page renders without a crash. Before treating
+any profile as complete:
+
+- Every **required** (non-`?`) field on the type in `lib/types/index.ts`
+  must be populated with real, sourced data — not `''`, `0`, `[]`, or a
+  placeholder string standing in for "unknown."
+- If a required field's real value genuinely isn't available yet from any
+  listed source, do not leave it blank or fabricate a value. Instead:
+  1. Populate it with the best sourced value you can find and cite, or
+  2. If nothing is available, add/update a `dataNote` (on `Election`) or an
+     equivalent inline note explaining what's missing and why, so the gap is
+     visible rather than silently rendered as empty.
+- Optional fields (`?`) that a page section depends on (e.g. `endorsements`,
+  `statementsVsActions`, `approvalRating`) should still be filled whenever a
+  source exists — don't skip them just because they're optional in the type.
+- Every array of records (`votingRecord`, `campaignFinance.donors`,
+  `stockTrades`, `controversies`, `news`, `topIssues`, `statementsVsActions`,
+  `consistency.campaignPromises`) must have every item carry a `source`
+  (or `evidenceSource`) per §4 — an item with no source is incomplete, not
+  just unsourced.
+- When adding a new page/section that reads politician or election data, add
+  the fields it needs to the shared types first, then populate them for
+  every existing record — never let one page's needs create a field that's
+  only filled in for some profiles.
+
+## 4. Sourcing & objectivity rules
+
+- Every `Source` object must set `tier: SourceTier` (`official` |
+  `nonpartisan` | `media` | `alleged` | `unverified`) per the definitions in
+  `lib/types/index.ts` and the tables in `OBJECTIVE_SOURCES.md`. Never leave
+  a source untiered.
+- Any source with a documented political lean (see the lean table in
+  `OBJECTIVE_SOURCES.md`) must have that lean surfaced in the UI wherever
+  its content is shown. Never display lean-source content without its lean
+  label — labeling multiple perspectives is the project's core credibility
+  mechanism, not an optional annotation.
+- `NewsItem.isOpinion` must be `true` for any op-ed/editorial/column,
+  regardless of outlet, and opinion content is never used as the sole source
+  for a factual claim — only for "public reaction" style sections.
+- `Controversy.isVerified` may only be `true` when backed by an `official`
+  or `nonpartisan` tier source; otherwise it stays `false` and the item is
+  tiered `alleged` or `unverified`.
+- `StatementVsAction` requires both a sourced `statement` and a sourced
+  `action` — never create one half without the other.
+- `CampaignPromise.status` other than `'In Progress'` requires `evidence`
+  and `evidenceSource` — a verdict without evidence is not allowed.
+- Wire services (AP, Reuters) and official records are the default choice
+  for factual claims; use editorial/leaning outlets only for
+  perspective/context sections, always labeled.
+
+## 5. Quick checklist before calling a profile/page "done"
+
+- [ ] All required fields populated with real, sourced values (§3)
+- [ ] Every array item has a tiered `Source` (§4)
+- [ ] Any genuinely unavailable field has a `dataNote` / explicit gap marker
+      instead of being blank
+- [ ] Lean labels shown for any leaning source used
+- [ ] No direct external API calls from client code (§1)
+- [ ] New/changed fields added to `lib/types/index.ts`, not ad-hoc shapes
